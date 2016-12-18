@@ -54,6 +54,22 @@ namespace Server {
                 case PacketHeader.Register:
                     var register = (AccountRegister)packet.Value;
 
+                    usernamesPasswords = new Dictionary<string, string>();
+
+                    if (!Server.MainDB.Run("SELECT * FROM accounts", out reader)) {
+                        Console.WriteLine("Failed to find accounts");
+                    } else {
+                        while (reader.Read()) {
+                            usernamesPasswords.Add(reader["username"] + "", reader["password"] + "");
+                        }
+                        reader.Close();
+                    }
+
+                    if (usernamesPasswords.ContainsKey(register.Username)) {
+                        Console.WriteLine("Failed to register account, Username already in use");
+                        break;
+                    }
+
                     if (Server.MainDB.Run("INSERT INTO `accounts` (`username`, `password`) VALUES ('" + register.Username + "', '" + register.Password + "');")) {
                         Console.WriteLine("successfully registered account");
                     }

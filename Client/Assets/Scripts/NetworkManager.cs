@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using Battlehub.Dispatcher;
 using Shared;
@@ -64,7 +65,7 @@ public class NetworkManager : MonoBehaviour {
 
         CurrentLoginStatus = LoginStatus.Registering;
 
-        var buffer = new AccountRegister(SocketId, Username.GetComponent<InputField>().text, Password.GetComponent<InputField>().text).ToByteArray();
+        var buffer = new AccountRegister(SocketId, Username.GetComponent<InputField>().text, Encrypt(Username.GetComponent<InputField>().text + ":" + Password.GetComponent<InputField>().text)).ToByteArray();
 
         _clientSocket.Send(buffer);
         _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
@@ -207,9 +208,23 @@ public class NetworkManager : MonoBehaviour {
         CurrentLoginStatus = LoginStatus.Authenticating;
 
 
-        var buffer = new Login(SocketId, Username.GetComponent<InputField>().text, Password.GetComponent<InputField>().text).ToByteArray();
+        var encryptedPassword = Encrypt(Username.GetComponent<InputField>().text + ":" + Password.GetComponent<InputField>().text);
+
+        var buffer = new Login(SocketId, Username.GetComponent<InputField>().text, encryptedPassword).ToByteArray();
 
         _clientSocket.Send(buffer);
         _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
+    }
+
+    private string Encrypt(string text) {
+        var textInBytes = Encoding.ASCII.GetBytes(text);
+
+        SHA1 sha1 = new SHA1CryptoServiceProvider();
+
+        var result = sha1.ComputeHash(textInBytes);
+
+        var encryptedPassword = Encoding.ASCII.GetString(result);
+
+        return encryptedPassword;
     }
 }
