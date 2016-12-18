@@ -6,3 +6,11 @@ C:\Users\matha\OneDrive\Documents\AO2\Server\Server\obj\Debug\Server.pdb
 C:\Users\matha\OneDrive\Documents\AO2\Server\Server\bin\Debug\Shared.dll
 C:\Users\matha\OneDrive\Documents\AO2\Server\Server\bin\Debug\Shared.pdb
 C:\Users\matha\OneDrive\Documents\AO2\Server\Server\bin\Debug\MySql.Data.dll
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Server\obj\Debug\Server.exe
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Server\obj\Debug\Server.pdb
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Server\bin\Debug\Server.exe
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Server\bin\Debug\Server.pdb
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Server\bin\Debug\MySql.Data.dll
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Server\bin\Debug\Shared.dll
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Server\bin\Debug\Shared.pdb
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache
