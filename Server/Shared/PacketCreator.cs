@@ -30,7 +30,9 @@ namespace Shared {
         Movement, // Should be recieved by the server then distributed to other online players
         CharacterDisconnect,
         Login,
-        AuthenticationRespons
+        AuthenticationRespons,
+        Register,
+        RegisterRespons
     }
 
     public class PacketCreator {
@@ -86,6 +88,10 @@ namespace Shared {
                         var authenticationRespons = (AuthenticationRespons.AuthenticationResponses)br.ReadInt32();
 
                         return new Packet(header, new AuthenticationRespons(socketId, authenticationRespons));
+                    case PacketHeader.Register:
+                        socketId = br.ReadInt32();
+
+                        return new Packet(header, new AccountRegister(socketId, br.ReadString(), br.ReadString()));
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

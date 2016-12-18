@@ -28,24 +28,46 @@ public class NetworkManager : MonoBehaviour {
         Connecting,
         Authenticating,
         Connected,
-        FailedToConnect
+        FailedToConnect,
+        Registering
     }
 
     public LoginStatus CurrentLoginStatus = LoginStatus.Idle;
+
+    public void ConnectToServer() {
+        _clientSocket.Connect(IPAddress.Loopback, 3003);
+
+        _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
+    }
 
     public void AttemptLogin() {
         CurrentLoginStatus = LoginStatus.Connecting;
 
         try {
-            _clientSocket.Connect(IPAddress.Loopback, 3003);
+            if (!_clientSocket.Connected)
+                ConnectToServer();
+            else {
+                Debug.Log("Authenticating");
+                Authenticate();
+            }
+
+
         } catch (SocketException ex) {
             Debug.LogError(ex.Message);
             CurrentLoginStatus = LoginStatus.FailedToConnect;
-            return;
         }
+    }
 
+    public void RegisterAccount() {
+        if (!_clientSocket.Connected)
+            ConnectToServer();
+
+        CurrentLoginStatus = LoginStatus.Registering;
+
+        var buffer = new AccountRegister(SocketId, Username.GetComponent<InputField>().text, Password.GetComponent<InputField>().text).ToByteArray();
+
+        _clientSocket.Send(buffer);
         _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
-     
     }
 
     void Update() {
@@ -152,14 +174,11 @@ public class NetworkManager : MonoBehaviour {
                         break;
                     case PacketHeader.Connected:
                         SocketId = ((Connected)packet.Value).SocketId;
-                        CurrentLoginStatus = LoginStatus.Authenticating;
 
-
-                        var buffer = new Login(SocketId, Username.GetComponent<InputField>().text, Password.GetComponent<InputField>().text).ToByteArray();
-
-                        _clientSocket.Send(buffer);
-                        _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
-
+                        if (CurrentLoginStatus == LoginStatus.Connecting)
+                            Authenticate();
+                        break;
+                    case PacketHeader.RegisterRespons:
                         break;
                     case PacketHeader.AuthenticationRespons:
                         var respons = (AuthenticationRespons)packet.Value;
@@ -168,7 +187,6 @@ public class NetworkManager : MonoBehaviour {
                             CurrentLoginStatus = LoginStatus.Connected;
                         } else {
                             CurrentLoginStatus = LoginStatus.FailedToConnect;
-                            // reset!
                         }
 
                         Debug.Log("Recieved authentication respons: " + respons.Respons.ToString());
@@ -182,9 +200,16 @@ public class NetworkManager : MonoBehaviour {
             _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
         } catch (SocketException) {
             Console.WriteLine("Unexpcted Disconnect");
-            //_clientSockets[socketId].Disconnect(false);
-            //_clientSockets.RemoveAt(socketId);
-
         }
+    }
+
+    private void Authenticate() {
+        CurrentLoginStatus = LoginStatus.Authenticating;
+
+
+        var buffer = new Login(SocketId, Username.GetComponent<InputField>().text, Password.GetComponent<InputField>().text).ToByteArray();
+
+        _clientSocket.Send(buffer);
+        _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
     }
 }

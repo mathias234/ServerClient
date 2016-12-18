@@ -36,9 +36,30 @@ namespace Server {
             }
         }
 
-        public void Run(string sqlString) {
-            MySqlCommand cmd = new MySqlCommand(sqlString, _connection);
-            cmd.ExecuteNonQuery();
+        public bool Run(string sqlString, out MySqlDataReader reader) {
+            try {
+                var cmd = new MySqlCommand(sqlString, _connection);
+                cmd.ExecuteNonQuery();
+
+                if (sqlString.ToLower().Contains("select")) {
+                    reader = cmd.ExecuteReader();
+                    return true;
+                }
+
+                reader = null;
+                return true;
+            } catch (Exception ex) {
+                Console.WriteLine("Failed to run SQL: " + sqlString + "\n Error: " + ex.Message);
+                reader = null;
+                return false;
+            }
+        }
+
+
+        public bool Run(string sqlString) {
+            MySqlDataReader reader;
+
+            return Run(sqlString, out reader);
         }
 
         public bool CloseConnection() {
