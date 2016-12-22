@@ -9,16 +9,20 @@ using Shared.Packets;
 namespace Server {
     public class Server {
         private static byte[] _buffer = new byte[1024];
-        private static Dictionary<int, Socket> _clientSockets = new Dictionary<int, Socket>();
-        private static Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        public static int lastKey;
 
-        public static Database MainDB;
+        private static Dictionary<int, Account> _clientSockets = new Dictionary<int, Account>();
+
+        private static Socket _serverSocket;
+
+        public static int LastKey;
+
+        public static Database MainDb;
 
 
         public static void Main(string[] args) {
-            Console.WriteLine("opening a DB connection");
-            MainDB = new Database("localhost", "main", "root", "root");
+            Console.Title = "MMO Server";
+            Log.Debug("Opening a DB connection");
+            MainDb = new Database("localhost", "main", "root", "root");
             SetupServer(3003);
 
 
@@ -29,15 +33,18 @@ namespace Server {
 
                 switch (consoleInput.ToLower()) {
                     case "stop":
-                        MainDB.CloseConnection();
+                        MainDb.CloseConnection();
                         return;
                 }
             }
         }
 
         private static void SetupServer(int port) {
-            Console.WriteLine("Setting up server...");
+            Log.Debug("Setting up server...");
+            _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
             _serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
+
             _serverSocket.Listen(5);
             _serverSocket.BeginAccept(AcceptCallback, null);
         }
@@ -45,16 +52,16 @@ namespace Server {
         private static void AcceptCallback(IAsyncResult result) {
             var socket = _serverSocket.EndAccept(result);
 
-            _clientSockets.Add(lastKey, socket);
+            _clientSockets.Add(LastKey, /* a temporary account */ new Account(-1, "", "", socket));
 
 
-            Console.WriteLine("Client Connected");
+            Log.Debug("Client Connected");
 
-            SendNewCharacter(lastKey);
+            SendNewCharacter(LastKey);
 
-            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, lastKey);
+            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, LastKey);
 
-            lastKey++;
+            LastKey++;
 
             _serverSocket.BeginAccept(AcceptCallback, null);
         }
@@ -65,7 +72,7 @@ namespace Server {
             try {
                 if (!_clientSockets.ContainsKey(socketId)) return;
 
-                var received = _clientSockets[socketId].EndReceive(result);
+                var received = _clientSockets[socketId].Socket.EndReceive(result);
 
                 if (received == 0) {
                     CleanupDisconnectedPlayer(socketId);
@@ -80,7 +87,7 @@ namespace Server {
 
                 PacketHandler.HandlePacket(socketId, packet);
 
-                _clientSockets[socketId].BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, socketId);
+                _clientSockets[socketId].Socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, socketId);
             } catch (SocketException) {
                 CleanupDisconnectedPlayer(socketId);
             }
@@ -90,14 +97,14 @@ namespace Server {
         public static void CleanupDisconnectedPlayer(int socketId) {
             if (_clientSockets.ContainsKey(socketId)) {
                 SendCharacterDisconnect(socketId);
-                _clientSockets[socketId].Shutdown(SocketShutdown.Both);
+                _clientSockets[socketId].Socket.Shutdown(SocketShutdown.Both);
                 _clientSockets.Remove(socketId);
             }
         }
 
         public static void SendData(int socketId, byte[] data) {
             try {
-                _clientSockets[socketId].BeginSend(data, 0, data.Length, SocketFlags.None, SendCallbakck, socketId);
+                _clientSockets[socketId].Socket.BeginSend(data, 0, data.Length, SocketFlags.None, SendCallbakck, socketId);
             } catch (Exception) {
                 // ignored
             }
@@ -137,7 +144,7 @@ namespace Server {
                 }
 
                 var data = new Movement(socketId, vector3, yRotation, forward, turn, crouch, onGround, jump, jumpLeg).ToByteArray();
-                SendData( clientSocket.Key, data);
+                SendData(clientSocket.Key, data);
             }
         }
 
@@ -153,9 +160,21 @@ namespace Server {
             SendData(socketId, data);
         }
 
+        /// <summary>
+        /// Will keep the socket
+        /// Make sure you update this when editing account.cs
+        /// </summary>
+        /// <param name="socketId"></param>
+        /// <param name="newAccount"></param>
+        public static void UpdateAccountId(int socketId, Account newAccount) {
+            _clientSockets[socketId].AccountId = newAccount.AccountId;
+            _clientSockets[socketId].Username = newAccount.Username;
+            _clientSockets[socketId].Password = newAccount.Password;
+        }
+
         private static void SendCallbakck(IAsyncResult result) {
             var socketId = (int)result.AsyncState;
-            _clientSockets[socketId].EndSend(result);
+            _clientSockets[socketId].Socket.EndSend(result);
         }
     }
 }

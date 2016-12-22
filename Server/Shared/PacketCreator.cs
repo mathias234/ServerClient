@@ -32,7 +32,8 @@ namespace Shared {
         Login,
         AuthenticationRespons,
         Register,
-        RegisterRespons
+        RegisterRespons,
+        RequestCharacters
     }
 
     public class PacketCreator {
@@ -92,11 +93,25 @@ namespace Shared {
                         socketId = br.ReadInt32();
 
                         return new Packet(header, new AccountRegister(socketId, br.ReadString(), br.ReadString()));
+                    case PacketHeader.RegisterRespons:
+                        break;
+                    case PacketHeader.RequestCharacters:
+                        socketId = br.ReadInt32();
+
+                        var characters = new List<Character>();
+
+                        for (int i = 0; i < length; i++) {
+                            var name = br.ReadString();
+                            var level = br.ReadInt32();
+                            characters.Add(new Character(name, level));
+                        }
+
+                        return new Packet(header, new RequestCharacters(socketId, characters));
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
 
-                return new Packet(header, br.ReadBytes(length));
+                return null;
             }
             // return the bytes
             catch (Exception ex) {

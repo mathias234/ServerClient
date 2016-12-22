@@ -17,10 +17,9 @@ namespace Server {
                 case PacketHeader.Movement:
                     var movement = (Movement)packet.Value;
 
-                    //Console.WriteLine("socketId" + socketId + "x: " + movement.NewPosition.X + " y: " + movement.NewPosition.Y + " z: " + movement.NewPosition.Z);
-
                     // send this new position to all players
-                    Server.SendMovement(movement.SocketId, movement.NewPosition, movement.YRotation, movement.Forward, movement.Turn, movement.Crouch, movement.OnGround, movement.Jump, movement.JumpLeg);
+                    Server.SendMovement(movement.SocketId, movement.NewPosition, movement.YRotation, movement.Forward,
+                        movement.Turn, movement.Crouch, movement.OnGround, movement.Jump, movement.JumpLeg);
                     break;
                 case PacketHeader.GetOtherPlayers:
                     Server.SendPlayers(socketId);
@@ -28,52 +27,64 @@ namespace Server {
                 case PacketHeader.Login:
                     var login = (Login)packet.Value;
 
-                    Console.WriteLine(login.Username + ":" + login.Password);
+                    Log.Debug(login.Username + ":" + login.Password);
 
                     MySqlDataReader reader;
 
-                    var usernamesPasswords = new Dictionary<string, string>();
+                    var accounts = new List<Account>();
 
-                    if (!Server.MainDB.Run("SELECT * FROM accounts", out reader)) {
-                        Console.WriteLine("Failed to find accounts");
+                    if (!Server.MainDb.Run("SELECT * FROM accounts", out reader)) {
+                        Log.Error("Failed to find accounts");
                     } else {
                         while (reader.Read()) {
-                            usernamesPasswords.Add(reader["username"] + "", reader["password"] + "");
+                            accounts.Add(new Account((int)reader["id"], (string)reader["username"],
+                                (string)reader["password"] + "", null));
                         }
                         reader.Close();
                     }
 
-                    foreach (var usernamesPassword in usernamesPasswords) {
-                        if (login.Username == usernamesPassword.Key && login.Password == usernamesPassword.Value)
-                            Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Success).ToByteArray());
-                        else
-                            Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed).ToByteArray());
+                    foreach (var account in accounts) {
+                        if (login.Username == account.Username && login.Password == account.Password) {
+                            Server.UpdateAccountId(socketId, account);
+                            Server.SendData(socketId,
+                                new AuthenticationRespons(socketId,
+                                    AuthenticationRespons.AuthenticationResponses.Success).ToByteArray());
+                        } else
+                            Server.SendData(socketId,
+                                new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed)
+                                    .ToByteArray());
                     }
 
                     break;
                 case PacketHeader.Register:
                     var register = (AccountRegister)packet.Value;
 
-                    usernamesPasswords = new Dictionary<string, string>();
+                    accounts = new List<Account>();
 
-                    if (!Server.MainDB.Run("SELECT * FROM accounts", out reader)) {
-                        Console.WriteLine("Failed to find accounts");
+                    if (!Server.MainDb.Run("SELECT * FROM accounts", out reader)) {
+                        Log.Error("Failed to find accounts");
                     } else {
                         while (reader.Read()) {
-                            usernamesPasswords.Add(reader["username"] + "", reader["password"] + "");
+                            accounts.Add(new Account((int)reader["id"], (string)reader["username"],
+                                (string)reader["password"] + "", null));
                         }
                         reader.Close();
                     }
 
-                    if (usernamesPasswords.ContainsKey(register.Username)) {
-                        Console.WriteLine("Failed to register account, Username already in use");
-                        break;
+                    if (accounts.Any(account => account.Username == register.Username)) {
+                        Log.Debug("Failed to register account, Username already in use");
+                        return 0;
                     }
 
-                    if (Server.MainDB.Run("INSERT INTO `accounts` (`username`, `password`) VALUES ('" + register.Username + "', '" + register.Password + "');")) {
-                        Console.WriteLine("successfully registered account");
+                    if (Server.MainDb.Run("INSERT INTO `accounts` (`username`, `password`) VALUES ('" + register.Username + "', '" + register.Password + "');")) {
+                        Log.Debug("successfully registered account");
                     }
-
+                    break;
+                case PacketHeader.RequestCharacters:
+                    Server.SendData(socketId, new RequestCharacters(socketId, new List<Character>() {
+                        new Character("First", 50),
+                        new Character("Secound", 20)
+                    }).ToByteArray());
                     break;
             }
 

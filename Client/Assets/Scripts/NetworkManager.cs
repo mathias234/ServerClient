@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
+using Assets;
 using Battlehub.Dispatcher;
 using Shared;
 using Shared.Packets;
@@ -15,7 +15,8 @@ public class NetworkManager : MonoBehaviour {
     private static byte[] _buffer = new byte[1024];
     // this clients socket
     private static Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-    public bool Send;
+
+    public string IpAdress;
 
     public GameObject ProxyCharacter;
 
@@ -23,6 +24,8 @@ public class NetworkManager : MonoBehaviour {
     public GameObject Password;
 
     public int SocketId;
+
+    public bool Send;
 
     public enum LoginStatus {
         Idle,
@@ -36,8 +39,7 @@ public class NetworkManager : MonoBehaviour {
     public LoginStatus CurrentLoginStatus = LoginStatus.Idle;
 
     public void ConnectToServer() {
-        _clientSocket.Connect(IPAddress.Loopback, 3003);
-
+        _clientSocket.Connect(IPAddress.Parse(IpAdress), 3003);
         _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
     }
 
@@ -67,8 +69,7 @@ public class NetworkManager : MonoBehaviour {
 
         var buffer = new AccountRegister(SocketId, Username.GetComponent<InputField>().text, Encrypt(Username.GetComponent<InputField>().text + ":" + Password.GetComponent<InputField>().text)).ToByteArray();
 
-        _clientSocket.Send(buffer);
-        _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
+        SendData(buffer);
     }
 
     void Update() {
@@ -99,7 +100,7 @@ public class NetworkManager : MonoBehaviour {
             var buffer = new Movement(player.GetComponent<NetworkCharacter>().socketId, new NetworkVector3(
                 position.x, position.y, position.z), yRotation, forward, turn, crouch, onGround, jump, jumpLeg).ToByteArray();
 
-            _clientSocket.Send(buffer);
+            SendData(buffer);
         } catch (Exception ex) {
             Debug.Log("Failed to send data " + ex.Message);
         }
@@ -186,11 +187,24 @@ public class NetworkManager : MonoBehaviour {
 
                         if (respons.Respons == AuthenticationRespons.AuthenticationResponses.Success) {
                             CurrentLoginStatus = LoginStatus.Connected;
+                            RequestCharacters();
                         } else {
                             CurrentLoginStatus = LoginStatus.FailedToConnect;
                         }
 
                         Debug.Log("Recieved authentication respons: " + respons.Respons.ToString());
+                        break;
+                    case PacketHeader.RequestCharacters:
+                        var characters = (RequestCharacters) packet.Value;
+
+                        var characterSelection = FindObjectOfType<PopulateCharacterSelection>();
+                        foreach (var requestCharacter in characters.Characters) {
+                            Debug.Log("name: " + requestCharacter.Name + " level: " + requestCharacter.Level);
+                        }
+
+                        characterSelection.Populate(characters.Characters);
+
+
                         break;
                     default:
                         Debug.LogError("Unhandled packet received");
@@ -200,18 +214,26 @@ public class NetworkManager : MonoBehaviour {
 
             _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
         } catch (SocketException) {
-            Console.WriteLine("Unexpcted Disconnect");
+            Debug.LogWarning("Unexpcted Disconnect");
         }
+    }
+
+    private void RequestCharacters() {
+        var buffer = new RequestCharacters(SocketId, new List<Character>()).ToByteArray();
+        SendData(buffer);
     }
 
     private void Authenticate() {
         CurrentLoginStatus = LoginStatus.Authenticating;
 
-
         var encryptedPassword = Encrypt(Username.GetComponent<InputField>().text + ":" + Password.GetComponent<InputField>().text);
 
         var buffer = new Login(SocketId, Username.GetComponent<InputField>().text, encryptedPassword).ToByteArray();
 
+        SendData(buffer);
+    }
+
+    public void SendData(byte[] buffer) {
         _clientSocket.Send(buffer);
         _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, null);
     }

@@ -7,8 +7,8 @@ C:\Users\matha\OneDrive\Documents\AO2\Client\Assets\Shared.dll
 C:\Users\matha\OneDrive\Documents\AO2\Client\Assets\Shared.pdb
 C:\Users\matha\OneDrive\Documents\ServerClient\Client\Assets\Shared.dll
 C:\Users\matha\OneDrive\Documents\ServerClient\Client\Assets\Shared.pdb
-C:\Users\matha\OneDrive\Documents\ServerClient\Server\Shared\obj\Debug\Shared.csprojResolveAssemblyReference.cache
 C:\Users\matha\OneDrive\Documents\ServerClient\Server\Shared\obj\Debug\Shared.dll
 C:\Users\matha\OneDrive\Documents\ServerClient\Server\Shared\obj\Debug\Shared.pdb
 C:\Users\matha\OneDrive\Documents\ServerClient\Client\Assets\Libraries\Shared\Shared.dll
 C:\Users\matha\OneDrive\Documents\ServerClient\Client\Assets\Libraries\Shared\Shared.pdb
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Shared\obj\Debug\Shared.csprojResolveAssemblyReference.cache

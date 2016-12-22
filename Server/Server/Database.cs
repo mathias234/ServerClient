@@ -27,10 +27,10 @@ namespace Server {
             } catch (MySqlException ex) {
                 switch (ex.Number) {
                     case 0:
-                        Console.WriteLine("Cannot connect to server.  Contact administrator");
+                        Log.Error("Cannot connect to server.  Contact administrator");
                         break;
                     case 1045:
-                        Console.WriteLine("Invalid username/password, please try again");
+                        Log.Error("Invalid username/password, please try again");
                         break;
                 }
             }
@@ -49,7 +49,7 @@ namespace Server {
                 reader = null;
                 return true;
             } catch (Exception ex) {
-                Console.WriteLine("Failed to run SQL: " + sqlString + "\n Error: " + ex.Message);
+                Log.Error("Failed to run SQL: " + sqlString + "\n Error: " + ex.Message);
                 reader = null;
                 return false;
             }
@@ -67,7 +67,7 @@ namespace Server {
                 _connection.Close();
                 return true;
             } catch (MySqlException ex) {
-                Console.WriteLine(ex.Message);
+                Log.Error(ex.Message);
                 return false;
             }
         }
