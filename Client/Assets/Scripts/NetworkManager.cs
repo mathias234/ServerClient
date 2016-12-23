@@ -20,12 +20,16 @@ public class NetworkManager : MonoBehaviour {
 
     public GameObject ProxyCharacter;
 
+    public GameObject Login;
+    public GameObject CharadcterSelection;
+
     public GameObject Username;
     public GameObject Password;
 
     public int SocketId;
 
     public bool Send;
+
 
     public enum LoginStatus {
         Idle,
@@ -72,16 +76,6 @@ public class NetworkManager : MonoBehaviour {
         SendData(buffer);
     }
 
-    void Update() {
-        if (Input.GetKeyDown(KeyCode.F)) {
-            Send = !Send;
-        }
-
-        if (Send) {
-            SendMovement();
-        }
-    }
-
     private void SendMovement() {
         try {
             var player = GameObject.FindGameObjectWithTag("Player");
@@ -122,7 +116,7 @@ public class NetworkManager : MonoBehaviour {
 
             // handle the packets on the main thread as it will interact with the unity systems
             Dispatcher.Current.BeginInvoke(() => {
-                var player = GameObject.FindGameObjectWithTag("Player");
+                GameObject.FindGameObjectWithTag("Player");
 
                 switch (packet.Header) {
                     case PacketHeader.NewProxyCharacter:
@@ -219,6 +213,8 @@ public class NetworkManager : MonoBehaviour {
     }
 
     private void RequestCharacters() {
+        Login.SetActive(false);
+        CharadcterSelection.SetActive(true);
         var buffer = new RequestCharacters(SocketId, new List<Character>()).ToByteArray();
         SendData(buffer);
     }

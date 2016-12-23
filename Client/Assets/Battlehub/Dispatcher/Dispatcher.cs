@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 
+#pragma warning disable 169
 namespace Battlehub.Dispatcher
 {
     public class Dispatcher : MonoBehaviour

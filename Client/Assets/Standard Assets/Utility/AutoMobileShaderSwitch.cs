@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
+#pragma warning disable 169
 namespace UnityStandardAssets.Utility
 {
     public class AutoMobileShaderSwitch : MonoBehaviour

@@ -16,13 +16,10 @@ public class TabControl : MonoBehaviour {
 
     // Update is called once per frame
     public void Update() {
-
         if (Input.GetKeyDown(KeyCode.Tab)) {
             Selectable next = null;
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) {
                 next = system.currentSelectedGameObject.GetComponent<Selectable>().FindSelectableOnUp();
-                if (next == null)
-                    next = system.lastSelectedGameObject.GetComponent<Selectable>();
             } else {
                 next = system.currentSelectedGameObject.GetComponent<Selectable>().FindSelectableOnDown();
                 if (next == null)

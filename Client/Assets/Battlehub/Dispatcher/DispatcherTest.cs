@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System;
 using System.Threading;
 
+#pragma warning disable 649
 namespace Battlehub.Dispatcher
 {
     public class DispatcherTest : MonoBehaviour

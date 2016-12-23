@@ -82,8 +82,8 @@ namespace Server {
                     break;
                 case PacketHeader.RequestCharacters:
                     Server.SendData(socketId, new RequestCharacters(socketId, new List<Character>() {
-                        new Character("First", 50),
-                        new Character("Secound", 20)
+                        new Character("First", 50, CharacterClasses.Enforcer),
+                        new Character("Secound", 20, CharacterClasses.NanoTechnician)
                     }).ToByteArray());
                     break;
             }

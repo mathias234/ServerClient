@@ -4,9 +4,10 @@ namespace UnityStandardAssets.Utility
 {
 	public class SmoothFollow : MonoBehaviour
 	{
+#pragma warning disable 649
 
-		// The target we are following
-		[SerializeField]
+        // The target we are following
+        [SerializeField]
 		private Transform target;
 		// The distance in the x-z plane to the target
 		[SerializeField]
@@ -14,14 +15,14 @@ namespace UnityStandardAssets.Utility
 		// the height we want the camera to be above the target
 		[SerializeField]
 		private float height = 5.0f;
-
 		[SerializeField]
 		private float rotationDamping;
 		[SerializeField]
 		private float heightDamping;
+#pragma warning restore 649
 
-		// Use this for initialization
-		void Start() { }
+        // Use this for initialization
+        void Start() { }
 
 		// Update is called once per frame
 		void LateUpdate()

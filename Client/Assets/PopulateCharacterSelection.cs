@@ -7,14 +7,16 @@ namespace Assets {
         public GameObject CharacterTemplate;
         public GameObject CharacterSelection;
 
-        public void Populate(List<Character> charactersCharacters) {
-            foreach (var charactersCharacter in charactersCharacters) {
-                var character = Instantiate(CharacterTemplate);
-                character.transform.SetParent(CharacterSelection.transform);
+        public void Populate(List<Character> characters) {
+            foreach (var character in characters) {
+                var characterObj = Instantiate(CharacterTemplate);
+                characterObj.transform.SetParent(CharacterSelection.transform);
+                characterObj.transform.localScale = Vector3.one;
 
-                var uiCharacter = character.GetComponent<UICharacter>();
-                uiCharacter.SetName(charactersCharacter.Name);
-                uiCharacter.SetLevel(charactersCharacter.Level);
+                var uiCharacter = characterObj.GetComponent<UICharacter>();
+                uiCharacter.SetName(character.Name);
+                uiCharacter.SetLevel(character.Level);
+                uiCharacter.SetClass(character.Class);
             }
         }
     }
