@@ -33,7 +33,8 @@ namespace Shared {
         AuthenticationRespons,
         Register,
         RegisterRespons,
-        RequestCharacters
+        RequestCharacters,
+        CreateCharacter
     }
 
     public class PacketCreator {
@@ -59,7 +60,6 @@ namespace Shared {
                         var jumpLeg = br.ReadSingle();
 
                         return new Packet(header, new Movement(socketId, new NetworkVector3(x, y, z), yRot, forward, turn, crouch, onGround, jump, jumpLeg));
-
                     case PacketHeader.Connected:
                         return new Packet(header, new Connected(br.ReadInt32()));
                     case PacketHeader.NewProxyCharacter:
@@ -109,6 +109,10 @@ namespace Shared {
                         }
 
                         return new Packet(header, new RequestCharacters(socketId, characters));
+                    case PacketHeader.CreateCharacter:
+                        socketId = br.ReadInt32();
+
+                        return new Packet(header, new CreateCharacter(socketId, br.ReadString(), (CharacterClasses)br.ReadByte()));
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

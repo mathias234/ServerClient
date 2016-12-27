@@ -212,7 +212,7 @@ public class NetworkManager : MonoBehaviour {
         }
     }
 
-    private void RequestCharacters() {
+    public void RequestCharacters() {
         Login.SetActive(false);
         CharadcterSelection.SetActive(true);
         var buffer = new RequestCharacters(SocketId, new List<Character>()).ToByteArray();

@@ -172,6 +172,10 @@ namespace Server {
             _clientSockets[socketId].Password = newAccount.Password;
         }
 
+        public static Account GetAccountFromSocketId(int socketId) {
+            return _clientSockets[socketId];
+        }
+
         private static void SendCallbakck(IAsyncResult result) {
             var socketId = (int)result.AsyncState;
             _clientSockets[socketId].Socket.EndSend(result);

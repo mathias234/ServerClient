@@ -11,3 +11,4 @@ C:\Users\matha\OneDrive\Documents\ServerClient\Server\Shared\obj\Debug\Shared.dl
 C:\Users\matha\OneDrive\Documents\ServerClient\Server\Shared\obj\Debug\Shared.pdb
 C:\Users\matha\OneDrive\Documents\ServerClient\Client\Assets\Libraries\Shared\Shared.dll
 C:\Users\matha\OneDrive\Documents\ServerClient\Client\Assets\Libraries\Shared\Shared.pdb
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\Shared\obj\Debug\Shared.csprojResolveAssemblyReference.cache

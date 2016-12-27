@@ -8,6 +8,10 @@ namespace Assets {
         public GameObject CharacterSelection;
 
         public void Populate(List<Character> characters) {
+            foreach (Transform child in CharacterSelection.transform) {
+                Destroy(child.gameObject);
+            }
+
             foreach (var character in characters) {
                 var characterObj = Instantiate(CharacterTemplate);
                 characterObj.transform.SetParent(CharacterSelection.transform);
