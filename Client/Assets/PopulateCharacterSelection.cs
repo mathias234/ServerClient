@@ -23,10 +23,6 @@ namespace Assets {
             }
         }
 
-        public void SelectCharacter() {
-
-        }
-
         public void Populate(List<Character> characters) {
             foreach (Transform child in CharacterSelection.transform) {
                 Destroy(child.gameObject);
