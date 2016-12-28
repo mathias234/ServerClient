@@ -102,17 +102,43 @@ namespace Server {
                     break;
                 case PacketHeader.CreateCharacter:
                     var createCharacter = (CreateCharacter)packet.Value;
-                    Log.Debug("Creating character with name: " + createCharacter.Name + " and class" + createCharacter.CharClass);
+                    Log.Debug("Creating character with name: " + createCharacter.Name + " and class " + createCharacter.CharClass);
+
+                    characters = new List<Character>();
+
+                    // TODO: Cache this
+                    if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where accountId={0};",
+                        Server.GetAccountFromSocketId(socketId).AccountId), out reader)) {
+                        Log.Debug("Failed to find characters");
+                    } else {
+                        while (reader.Read()) {
+                            var name = (string)reader["characterName"];
+                            var level = (int)reader["characterLevel"];
+                            var charClass = (int)reader["characterClass"];
+                            characters.Add(new Character(name, level, (CharacterClasses)charClass));
+                        }
+                        reader.Close();
+                    }
+
+                    if (characters.Any(character => character.Name == createCharacter.Name)) {
+                        Server.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.NameAlreadyUsed).ToByteArray());
+                        return 0;
+                    }
 
                     var createCharacterSql = string.Format(
-                        "INSERT INTO characters (accountId, characterName, characterLevel, characterClass) VALUES ({0}, '{1}', 1, {2});",
-                        Server.GetAccountFromSocketId(createCharacter.SocketId).AccountId,
-                        createCharacter.Name,
-                        (int)createCharacter.CharClass);
+                    "INSERT INTO characters (accountId, characterName, characterLevel, characterClass) VALUES ({0}, '{1}', 1, {2});",
+                    Server.GetAccountFromSocketId(createCharacter.SocketId).AccountId,
+                    createCharacter.Name,
+                    (int)createCharacter.CharClass);
 
                     if (Server.MainDb.Run(createCharacterSql)) {
                         Log.Debug("successfully created character");
+                        Server.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.Success).ToByteArray());
+                    } else {
+                        Server.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.Failed).ToByteArray());
                     }
+                    break;
+                default:
                     break;
             }
 
