@@ -90,10 +90,11 @@ namespace Server {
                         Log.Debug("Failed to find characters");
                     } else {
                         while (reader.Read()) {
+                            var id = (int)reader["id"];
                             var name = (string)reader["characterName"];
                             var level = (int)reader["characterLevel"];
                             var charClass = (int)reader["characterClass"];
-                            characters.Add(new Character(name, level, (CharacterClasses)charClass));
+                            characters.Add(new Character(id, name, level, (CharacterClasses)charClass));
                         }
                         reader.Close();
                     }
@@ -107,15 +108,15 @@ namespace Server {
                     characters = new List<Character>();
 
                     // TODO: Cache this
-                    if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where accountId={0};",
-                        Server.GetAccountFromSocketId(socketId).AccountId), out reader)) {
+                    if (!Server.MainDb.Run("SELECT * FROM characters", out reader)) {
                         Log.Debug("Failed to find characters");
                     } else {
                         while (reader.Read()) {
+                            var id = (int)reader["id"];
                             var name = (string)reader["characterName"];
                             var level = (int)reader["characterLevel"];
                             var charClass = (int)reader["characterClass"];
-                            characters.Add(new Character(name, level, (CharacterClasses)charClass));
+                            characters.Add(new Character(id, name, level, (CharacterClasses)charClass));
                         }
                         reader.Close();
                     }

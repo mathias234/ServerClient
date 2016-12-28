@@ -6,8 +6,7 @@ using Shared.Packets;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CharacterCreation : MonoBehaviour
-{
+public class CharacterCreation : MonoBehaviour {
     public GameObject LastSelectedButton;
     public GameObject ClassTemplate;
     public GameObject Classes;
@@ -16,8 +15,7 @@ public class CharacterCreation : MonoBehaviour
     public int ClassId;
     private NetworkManager networkManager;
 
-    public void SetSelectedClass(int classId, GameObject charClass)
-    {
+    public void SetSelectedClass(int classId, GameObject charClass) {
         LastSelectedButton = charClass;
 
         ClassId = classId;
@@ -29,16 +27,14 @@ public class CharacterCreation : MonoBehaviour
         PopulateClasses();
     }
 
-    public void PopulateClasses()
-    {
+    public void PopulateClasses() {
         foreach (var child in Classes.transform) {
             Destroy((GameObject)child);
         }
 
         var enums = Enum.GetValues(typeof(Shared.CharacterClasses));
 
-        for (int i = 0; i < enums.Length; i++)
-        {
+        for (int i = 0; i < enums.Length; i++) {
             // TODO: Lookup the actual name somewhere
             var enumName = enums.GetValue(i);
 
@@ -53,15 +49,12 @@ public class CharacterCreation : MonoBehaviour
                 charClass.transform.FindChild("BasicBackground").gameObject.SetActive(false);
                 charClass.transform.FindChild("SelectedBackground").gameObject.SetActive(true);
 
-                var characterCreation = FindObjectOfType<CharacterCreation>();
-
-                if (characterCreation.LastSelectedButton != null && characterCreation.LastSelectedButton != charClass)
-                {
-                    characterCreation.LastSelectedButton.transform.FindChild("BasicBackground").gameObject.SetActive(true);
-                    characterCreation.LastSelectedButton.transform.FindChild("SelectedBackground").gameObject.SetActive(false);
+                if (LastSelectedButton != null && LastSelectedButton != charClass) {
+                    LastSelectedButton.transform.FindChild("BasicBackground").gameObject.SetActive(true);
+                    LastSelectedButton.transform.FindChild("SelectedBackground").gameObject.SetActive(false);
                 }
 
-                characterCreation.SetSelectedClass(i1, charClass);
+                SetSelectedClass(i1, charClass);
             });
         }
     }
@@ -71,12 +64,19 @@ public class CharacterCreation : MonoBehaviour
         networkManager.SendData(message);
     }
 
+    public void Reset() {
+        LastSelectedButton.transform.FindChild("BasicBackground").gameObject.SetActive(true);
+        LastSelectedButton.transform.FindChild("SelectedBackground").gameObject.SetActive(false);
+        CharacterName.text = "";
+    }
+
     public void HandleCreationRespons(CreateCharacterRespons characterCreationRespons) {
         switch (characterCreationRespons.Respons) {
             case CreateCharacterRespons.CreateCharacterResponses.Success:
                 CharacterSelection.SetActive(true);
                 gameObject.SetActive(false);
                 networkManager.RequestCharacters();
+                Reset();
                 break;
             case CreateCharacterRespons.CreateCharacterResponses.NameAlreadyUsed:
                 Debug.Log("Character name is already in use, try again");

@@ -102,11 +102,12 @@ namespace Shared {
                         var characters = new List<Character>();
 
                         for (int i = 0; i < length; i++) {
+                            var id = br.ReadInt32();
                             var name = br.ReadString();
                             var level = br.ReadInt32();
                             var charClass = (CharacterClasses) br.ReadByte();
 
-                            characters.Add(new Character(name, level, charClass));
+                            characters.Add(new Character(id, name, level, charClass));
                         }
 
                         return new Packet(header, new RequestCharacters(socketId, characters));
