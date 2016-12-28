@@ -50,7 +50,6 @@
     <Compile Include="Packets\INetworkPacket.cs" />
     <Compile Include="Packets\Connected.cs" />
     <Compile Include="Packets\NewProxyCharacter.cs" />
-    <Compile Include="Packets\Packet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Packets\RequestCharacters.cs" />
   </ItemGroup>
