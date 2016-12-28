@@ -197,8 +197,13 @@ public class NetworkManager : MonoBehaviour {
                         }
 
                         characterSelection.Populate(characters.Characters);
+                        break;
+                    case PacketHeader.CreateCharacterRespons:
+                        var characterCreationRespons = (CreateCharacterRespons)packet.Value;
 
 
+                        CharacterCreation cr = FindObjectOfType<CharacterCreation>();
+                        cr.HandleCreationRespons(characterCreationRespons);
                         break;
                     default:
                         Debug.LogError("Unhandled packet received");

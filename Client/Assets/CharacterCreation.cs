@@ -12,7 +12,9 @@ public class CharacterCreation : MonoBehaviour
     public GameObject ClassTemplate;
     public GameObject Classes;
     public InputField CharacterName;
+    public GameObject CharacterSelection;
     public int ClassId;
+    private NetworkManager networkManager;
 
     public void SetSelectedClass(int classId, GameObject charClass)
     {
@@ -23,6 +25,7 @@ public class CharacterCreation : MonoBehaviour
 
     // Use this for initialization
     void Start() {
+        networkManager = FindObjectOfType<NetworkManager>();
         PopulateClasses();
     }
 
@@ -64,9 +67,25 @@ public class CharacterCreation : MonoBehaviour
     }
 
     public void Finish() {
-        var nm = FindObjectOfType<NetworkManager>();
-        var message = new CreateCharacter(nm.SocketId, CharacterName.text, (CharacterClasses)ClassId).ToByteArray();
-        nm.SendData(message);
-        nm.RequestCharacters();
+        var message = new CreateCharacter(networkManager.SocketId, CharacterName.text, (CharacterClasses)ClassId).ToByteArray();
+        networkManager.SendData(message);
+    }
+
+    public void HandleCreationRespons(CreateCharacterRespons characterCreationRespons) {
+        switch (characterCreationRespons.Respons) {
+            case CreateCharacterRespons.CreateCharacterResponses.Success:
+                CharacterSelection.SetActive(true);
+                gameObject.SetActive(false);
+                networkManager.RequestCharacters();
+                break;
+            case CreateCharacterRespons.CreateCharacterResponses.NameAlreadyUsed:
+                Debug.Log("Character name is already in use, try again");
+                break;
+            case CreateCharacterRespons.CreateCharacterResponses.Failed:
+                Debug.Log("Failed to create character reason unknown. Please restart the game and try again");
+                break;
+            default:
+                break;  
+        }
     }
 }
