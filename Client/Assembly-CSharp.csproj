@@ -47,30 +47,27 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Battlehub\Dispatcher\Dispatcher.cs" />
-     <Compile Include="Assets\Battlehub\Dispatcher\DispatcherTest.cs" />
-     <Compile Include="Assets\CharacterCreation.cs" />
-     <Compile Include="Assets\PopulateCharacterSelection.cs" />
+     <Compile Include="Assets\Scripts\CharacterCreation.cs" />
      <Compile Include="Assets\Scripts\CharacterEquipment.cs" />
      <Compile Include="Assets\Scripts\CharacterStats.cs" />
      <Compile Include="Assets\Scripts\GetLoginStatus.cs" />
      <Compile Include="Assets\Scripts\NetworkCharacter.cs" />
      <Compile Include="Assets\Scripts\NetworkManager.cs" />
+     <Compile Include="Assets\Scripts\PopulateCharacterSelection.cs" />
+     <Compile Include="Assets\Scripts\TabControl.cs" />
      <Compile Include="Assets\Scripts\ThirdPersonCamera.cs" />
+     <Compile Include="Assets\Scripts\UICharacter.cs" />
      <Compile Include="Assets\Scripts\UIStatTypes.cs" />
      <Compile Include="Assets\Scripts\UiStat.cs" />
-     <Compile Include="Assets\TabControl.cs" />
-     <Compile Include="Assets\UICharacter.cs" />
      <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\FXWater4Simple.shader" />
      <None Include="Assets\Standard Assets\Environment\Water (Basic)\Shaders\FXWaterBasic.shader" />
      <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
      <None Include="Assets\Standard Assets\Environment\Water\Water\Shaders\FXWaterPro.shader" />
      <None Include="Assets\Standard Assets\Characters\ThirdPersonCharacter\ThirdPersonCharacterGuidelines.txt" />
      <None Include="Assets\Standard Assets\Characters\FirstPersonCharacter\FirstPersonCharacterGuidelines.txt" />
-     <None Include="Assets\Shader\Terrain2Layers.shader" />
      <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\WaterInclude.cginc" />
      <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\FXWater4Advanced.shader" />
      <None Include="Assets\Standard Assets\Characters\RollerBall\RollerBallGuidelines.txt" />
-     <None Include="Assets\Battlehub\Dispatcher\Dispatcher Documentation.txt" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
