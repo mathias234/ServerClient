@@ -41,20 +41,17 @@ namespace Server {
                     }
 
 
-                    accounts.Any(account => {
+                    foreach (var account in accounts) {
                         if (account.Username == login.Username && login.Password == account.Password) {
                             Server.UpdateAccountId(socketId, account);
                             Server.SendData(socketId,
                                 new AuthenticationRespons(socketId,
                                     AuthenticationRespons.AuthenticationResponses.Success).ToByteArray());
-                            return true;
-                        } else {
-                            Server.SendData(socketId,
-                               new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed)
-                                   .ToByteArray());
-                            return false;
+                            return 1;
                         }
-                    });
+                    }
+
+                    Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed).ToByteArray());
 
                     break;
                 case PacketHeader.Register:
@@ -73,13 +70,14 @@ namespace Server {
                     }
 
                     if (accounts.Any(account => account.Username == register.Username)) {
-                        Log.Debug("Failed to register account, Username already in use");
+                        Server.SendData(socketId,
+                            new RegisterRespons(socketId, RegisterRespons.RegisterResponses.UsernameAlreadyInUse).ToByteArray());
                         return 0;
                     }
 
                     if (Server.MainDb.Run("INSERT INTO `accounts` (`username`, `password`) VALUES " +
                                           "('" + register.Username + "', '" + register.Password + "');")) {
-                        Log.Debug("successfully registered account");
+                        Server.SendData(socketId, new RegisterRespons(socketId, RegisterRespons.RegisterResponses.Success).ToByteArray());
                     }
                     break;
                 case PacketHeader.RequestCharacters:

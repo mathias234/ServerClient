@@ -41,7 +41,9 @@ public class NetworkManager : MonoBehaviour {
         Authenticating,
         Connected,
         FailedToConnect,
-        Registering
+        Registering,
+        UsernameAlreadyInUse,
+        RegisteringSuccessful
     }
 
     public LoginStatus CurrentLoginStatus = LoginStatus.Idle;
@@ -168,6 +170,20 @@ public class NetworkManager : MonoBehaviour {
                             Authenticate();
                         break;
                     case PacketHeader.RegisterRespons:
+                        var regRespons = (RegisterRespons)packet.Value;
+
+                        switch (regRespons.Respons) {
+                            case RegisterRespons.RegisterResponses.Success:
+                                CurrentLoginStatus = LoginStatus.RegisteringSuccessful;
+                                break;
+                            case RegisterRespons.RegisterResponses.UsernameAlreadyInUse:
+                                CurrentLoginStatus = LoginStatus.UsernameAlreadyInUse;
+                                break;
+                            case RegisterRespons.RegisterResponses.Failed:
+                                Debug.LogError("Failed to register unknown reason");
+                                break;
+                        }
+
                         break;
                     case PacketHeader.AuthenticationRespons:
                         var respons = (AuthenticationRespons)packet.Value;

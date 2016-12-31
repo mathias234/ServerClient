@@ -84,7 +84,10 @@ namespace Shared {
 
                         return new Packet(header, new AccountRegister(socketId, br.ReadString(), br.ReadString()));
                     case PacketHeader.RegisterRespons:
-                        break;
+                        socketId = br.ReadInt32();
+                        var RegRespons = (RegisterRespons.RegisterResponses)br.ReadInt32();
+
+                        return new Packet(header, new RegisterRespons(socketId, RegRespons));
                     case PacketHeader.RequestCharacters:
                         socketId = br.ReadInt32();
 

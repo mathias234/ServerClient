@@ -4,30 +4,30 @@ using System.IO;
 using System.Text;
 
 namespace Shared.Packets {
-    public class AuthenticationRespons : INetworkPacket {
-        public enum AuthenticationResponses {
+    public class RegisterRespons : INetworkPacket {
+        public enum RegisterResponses {
             Success,
-            LoggedIn,
-            Failed
+            UsernameAlreadyInUse,
+            Failed // Unknown reason
         }
 
         public int SocketId;
-        public AuthenticationResponses Respons;
+        public RegisterResponses Respons;
         public int Size => 0;
 
-        public AuthenticationRespons() {
+        public RegisterRespons() {
             SocketId = -1;
-            Respons = AuthenticationResponses.Failed;
+            Respons = RegisterResponses.Failed;
         }
 
-        public AuthenticationRespons(int socketId, AuthenticationResponses respons) {
+        public RegisterRespons(int socketId, RegisterResponses respons) {
             SocketId = socketId;
             Respons = respons;
         }
 
         public byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
-            bw.Write((int)PacketHeader.AuthenticationRespons);
+            bw.Write((int)PacketHeader.RegisterRespons);
 
             var length = Size; // not required
 

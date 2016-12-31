@@ -65,8 +65,10 @@ public class CharacterCreation : MonoBehaviour {
     }
 
     public void Reset() {
-        LastSelectedButton.transform.FindChild("BasicBackground").gameObject.SetActive(true);
-        LastSelectedButton.transform.FindChild("SelectedBackground").gameObject.SetActive(false);
+        if (LastSelectedButton == null) {
+            LastSelectedButton.transform.FindChild("BasicBackground").gameObject.SetActive(true);
+            LastSelectedButton.transform.FindChild("SelectedBackground").gameObject.SetActive(false);
+        }
         CharacterName.text = "";
     }
 
@@ -85,7 +87,7 @@ public class CharacterCreation : MonoBehaviour {
                 Debug.Log("Failed to create character reason unknown. Please restart the game and try again");
                 break;
             default:
-                break;  
+                break;
         }
     }
 }
