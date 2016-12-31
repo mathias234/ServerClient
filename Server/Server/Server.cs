@@ -57,6 +57,9 @@ namespace Server {
 
             Log.Debug("Client Connected");
 
+
+            SendData(LastKey, new Connected(LastKey).ToByteArray());
+
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, LastKey);
 
             LastKey++;
@@ -131,18 +134,6 @@ namespace Server {
                 var data = new Movement(socketId, vector3, yRotation, forward, turn, crouch, onGround, jump, jumpLeg).ToByteArray();
                 SendData(clientSocket.Key, data);
             }
-        }
-
-        public static void SendPlayers(int socketId) {
-            var players = new List<int>();
-
-            foreach (var clientSocket in _clientSockets) {
-                if (clientSocket.Key == socketId) continue;
-                players.Add(clientSocket.Key);
-            }
-
-            var data = PacketCreator.CreatePacket(players);
-            SendData(socketId, data);
         }
 
         /// <summary>

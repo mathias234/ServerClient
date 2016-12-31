@@ -24,15 +24,17 @@ namespace Shared {
     public enum PacketHeader {
         GetTime,
         Ping, // a ping pong, the client / server sends a ping and should recieve a pong. Useful for checking if connection is still active
-        Movement, // Should be recieved by the server then distributed to other online players
+        Connected, // send this to the client that connects
         CharacterDisconnect,
         Login,
         AuthenticationRespons,
         Register,
         RegisterRespons,
+        RequestCharacters,
         CreateCharacter,
         CreateCharacterRespons,
-        FullCharacterUpdate
+        FullCharacterUpdate,
+        Movement
     }
 
     public class PacketCreator {
@@ -58,6 +60,8 @@ namespace Shared {
                         var jumpLeg = br.ReadSingle();
 
                         return new Packet(header, new Movement(socketId, new NetworkVector3(x, y, z), yRot, forward, turn, crouch, onGround, jump, jumpLeg));
+                    case PacketHeader.Connected:
+                        return new Packet(header, new Connected(br.ReadInt32()));
                     case PacketHeader.CharacterDisconnect:
                         socketId = br.ReadInt32();
                         return new Packet(header, new CharacterDisconnect(socketId));
@@ -81,6 +85,21 @@ namespace Shared {
                         return new Packet(header, new AccountRegister(socketId, br.ReadString(), br.ReadString()));
                     case PacketHeader.RegisterRespons:
                         break;
+                    case PacketHeader.RequestCharacters:
+                        socketId = br.ReadInt32();
+
+                        var characters = new List<Character>();
+
+                        for (int i = 0; i < length; i++) {
+                            var id = br.ReadInt32();
+                            var name = br.ReadString();
+                            var level = br.ReadInt32();
+                            var charClass = (CharacterClasses) br.ReadByte();
+
+                            characters.Add(new Character(id, name, level, charClass));
+                        }
+
+                        return new Packet(header, new RequestCharacters(socketId, characters));
                     case PacketHeader.CreateCharacter:
                         socketId = br.ReadInt32();
 

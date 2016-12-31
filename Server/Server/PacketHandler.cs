@@ -21,9 +21,6 @@ namespace Server {
                     Server.SendMovement(movement.SocketId, movement.NewPosition, movement.YRotation, movement.Forward,
                         movement.Turn, movement.Crouch, movement.OnGround, movement.Jump, movement.JumpLeg);
                     break;
-                case PacketHeader.GetOtherPlayers:
-                    Server.SendPlayers(socketId);
-                    break;
                 case PacketHeader.Login:
                     var login = (Login)packet.Value;
 
@@ -43,17 +40,21 @@ namespace Server {
                         reader.Close();
                     }
 
-                    foreach (var account in accounts) {
-                        if (login.Username == account.Username && login.Password == account.Password) {
+
+                    accounts.Any(account => {
+                        if (account.Username == login.Username && login.Password == account.Password) {
                             Server.UpdateAccountId(socketId, account);
                             Server.SendData(socketId,
                                 new AuthenticationRespons(socketId,
                                     AuthenticationRespons.AuthenticationResponses.Success).ToByteArray());
-                        } else
+                            return true;
+                        } else {
                             Server.SendData(socketId,
-                                new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed)
-                                    .ToByteArray());
-                    }
+                               new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed)
+                                   .ToByteArray());
+                            return false;
+                        }
+                    });
 
                     break;
                 case PacketHeader.Register:

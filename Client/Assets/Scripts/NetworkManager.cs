@@ -127,11 +127,6 @@ public class NetworkManager : MonoBehaviour {
                 GameObject.FindGameObjectWithTag("Player");
 
                 switch (packet.Header) {
-                    case PacketHeader.NewProxyCharacter:
-                        var character = Instantiate(ProxyCharacter);
-                        character.GetComponent<NetworkCharacter>().socketId = ((NewProxyCharacter)packet.Value).SocketId;
-                        character.GetComponent<NetworkCharacter>().isLocal = false;
-                        break;
                     case PacketHeader.GetTime:
                         break;
                     case PacketHeader.Ping:
@@ -156,15 +151,6 @@ public class NetworkManager : MonoBehaviour {
                                 animator.SetFloat("Jump", movement.Jump);
                                 animator.SetFloat("JumpLeg", movement.JumpLeg);
                             }
-                        }
-                        break;
-                    case PacketHeader.GetOtherPlayers:
-                        var players = ((List<int>)packet.Value);
-
-                        for (int i = 0; i < players.Count; i++) {
-                            var proxy = Instantiate(ProxyCharacter);
-                            proxy.GetComponent<NetworkCharacter>().socketId = players[i];
-                            proxy.GetComponent<NetworkCharacter>().isLocal = false;
                         }
                         break;
                     case PacketHeader.CharacterDisconnect:
