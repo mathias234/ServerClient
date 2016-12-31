@@ -24,18 +24,15 @@ namespace Shared {
     public enum PacketHeader {
         GetTime,
         Ping, // a ping pong, the client / server sends a ping and should recieve a pong. Useful for checking if connection is still active
-        NewProxyCharacter, // send this to all other clients when a player connects to the server
-        Connected, // send this to the client that connects
-        GetOtherPlayers, // client can use this to ask the server for a list of other players online
         Movement, // Should be recieved by the server then distributed to other online players
         CharacterDisconnect,
         Login,
         AuthenticationRespons,
         Register,
         RegisterRespons,
-        RequestCharacters,
         CreateCharacter,
-        CreateCharacterRespons
+        CreateCharacterRespons,
+        FullCharacterUpdate
     }
 
     public class PacketCreator {
@@ -61,18 +58,6 @@ namespace Shared {
                         var jumpLeg = br.ReadSingle();
 
                         return new Packet(header, new Movement(socketId, new NetworkVector3(x, y, z), yRot, forward, turn, crouch, onGround, jump, jumpLeg));
-                    case PacketHeader.Connected:
-                        return new Packet(header, new Connected(br.ReadInt32()));
-                    case PacketHeader.NewProxyCharacter:
-                        return new Packet(header, new NewProxyCharacter(br.ReadInt32()));
-                    case PacketHeader.GetOtherPlayers:
-                        var players = new List<int>();
-
-                        for (int i = 0; i < length; i++) {
-                            players.Add(br.ReadInt32());
-                        }
-
-                        return new Packet(header, players);
                     case PacketHeader.CharacterDisconnect:
                         socketId = br.ReadInt32();
                         return new Packet(header, new CharacterDisconnect(socketId));
@@ -96,21 +81,6 @@ namespace Shared {
                         return new Packet(header, new AccountRegister(socketId, br.ReadString(), br.ReadString()));
                     case PacketHeader.RegisterRespons:
                         break;
-                    case PacketHeader.RequestCharacters:
-                        socketId = br.ReadInt32();
-
-                        var characters = new List<Character>();
-
-                        for (int i = 0; i < length; i++) {
-                            var id = br.ReadInt32();
-                            var name = br.ReadString();
-                            var level = br.ReadInt32();
-                            var charClass = (CharacterClasses) br.ReadByte();
-
-                            characters.Add(new Character(id, name, level, charClass));
-                        }
-
-                        return new Packet(header, new RequestCharacters(socketId, characters));
                     case PacketHeader.CreateCharacter:
                         socketId = br.ReadInt32();
 
@@ -120,6 +90,18 @@ namespace Shared {
                         var createCharacterRespons = (CreateCharacterRespons.CreateCharacterResponses)br.ReadInt32();
 
                         return new Packet(header, new CreateCharacterRespons(socketId, createCharacterRespons));
+                    case PacketHeader.FullCharacterUpdate:
+                        socketId = br.ReadInt32();
+                        var charId = br.ReadInt32();
+                        var charName = br.ReadString();
+                        var charLevel = br.ReadInt32();
+                        var chararacterClass = br.ReadInt32();
+                        var mapId = br.ReadInt32();
+                        var posX = br.ReadSingle();
+                        var posY = br.ReadSingle();
+                        var posZ = br.ReadSingle();
+
+                        return new Packet(header, new FullCharacterUpdate(socketId, charId, charName, charLevel, chararacterClass, mapId, posX, posY, posZ));
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -131,23 +113,6 @@ namespace Shared {
                 Console.WriteLine("Failed to read packet: " + ex.Message);
                 return null;
             }
-        }
-
-        public static byte[] CreatePacket(List<int> players) {
-            var bw = new BinaryWriter(new MemoryStream());
-            bw.Write((int)PacketHeader.GetOtherPlayers);
-
-            var length = players.Count;
-
-            bw.Write(length);
-
-            foreach (var player in players) {
-                bw.Write(player);
-            }
-
-            var data = ((MemoryStream)bw.BaseStream).ToArray();
-
-            return data;
         }
     }
 }

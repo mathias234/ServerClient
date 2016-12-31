@@ -10,6 +10,8 @@ using Shared;
 using Shared.Packets;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class NetworkManager : MonoBehaviour {
     private static byte[] _buffer = new byte[1024];
@@ -30,6 +32,8 @@ public class NetworkManager : MonoBehaviour {
 
     public bool Send;
 
+    public GameObject CharacterTemplate;
+    public GameObject Character;
 
     public enum LoginStatus {
         Idle,
@@ -76,6 +80,10 @@ public class NetworkManager : MonoBehaviour {
         SendData(buffer);
     }
 
+    public void Update() {
+        SendMovement();
+    }
+
     private void SendMovement() {
         try {
             var player = GameObject.FindGameObjectWithTag("Player");
@@ -91,12 +99,12 @@ public class NetworkManager : MonoBehaviour {
             var jump = animator.GetFloat("Jump");
             var jumpLeg = animator.GetFloat("JumpLeg");
 
-            var buffer = new Movement(player.GetComponent<NetworkCharacter>().socketId, new NetworkVector3(
+            var buffer = new Movement(SocketId, new NetworkVector3(
                 position.x, position.y, position.z), yRotation, forward, turn, crouch, onGround, jump, jumpLeg).ToByteArray();
 
             SendData(buffer);
         } catch (Exception ex) {
-            Debug.Log("Failed to send data " + ex.Message);
+            //Debug.Log("Failed to send data " + ex.Message);
         }
     }
 
@@ -124,7 +132,6 @@ public class NetworkManager : MonoBehaviour {
                         character.GetComponent<NetworkCharacter>().socketId = ((NewProxyCharacter)packet.Value).SocketId;
                         character.GetComponent<NetworkCharacter>().isLocal = false;
                         break;
-
                     case PacketHeader.GetTime:
                         break;
                     case PacketHeader.Ping:
@@ -189,9 +196,9 @@ public class NetworkManager : MonoBehaviour {
                         Debug.Log("Recieved authentication respons: " + respons.Respons.ToString());
                         break;
                     case PacketHeader.RequestCharacters:
-                        var characters = (RequestCharacters) packet.Value;
+                        var characters = (RequestCharacters)packet.Value;
 
-                        var characterSelection = FindObjectOfType<PopulateCharacterSelection>();
+                        var characterSelection = FindObjectOfType<CharacterSelection>();
                         foreach (var requestCharacter in characters.Characters) {
                             Debug.Log("name: " + requestCharacter.Name + " level: " + requestCharacter.Level);
                         }
@@ -201,9 +208,15 @@ public class NetworkManager : MonoBehaviour {
                     case PacketHeader.CreateCharacterRespons:
                         var characterCreationRespons = (CreateCharacterRespons)packet.Value;
 
-
                         CharacterCreation cr = FindObjectOfType<CharacterCreation>();
                         cr.HandleCreationRespons(characterCreationRespons);
+                        break;
+                    case PacketHeader.FullCharacterUpdate:
+                        // the server forces all this information to be updated
+                        var fullCharacterUpdate = (FullCharacterUpdate)packet.Value;
+                        // move to the correct zone
+                        var asyncOperation = SceneManager.LoadSceneAsync("map" + fullCharacterUpdate.MapId);
+                        StartCoroutine(LoadMap(asyncOperation, fullCharacterUpdate));
                         break;
                     default:
                         Debug.LogError("Unhandled packet received");
@@ -215,6 +228,18 @@ public class NetworkManager : MonoBehaviour {
         } catch (SocketException) {
             Debug.LogWarning("Unexpcted Disconnect");
         }
+    }
+
+    IEnumerator LoadMap(AsyncOperation operation, FullCharacterUpdate fcu) {
+        yield return operation;
+
+        // move the character to the correct location
+        if (Character == null) {
+            // instantiate the character
+            Character = Instantiate(CharacterTemplate);
+        }
+
+        Character.transform.position = new Vector3(fcu.X, fcu.Y, fcu.Z);
     }
 
     public void RequestCharacters() {

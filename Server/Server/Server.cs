@@ -57,8 +57,6 @@ namespace Server {
 
             Log.Debug("Client Connected");
 
-            SendNewCharacter(LastKey);
-
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, RecievedCallback, LastKey);
 
             LastKey++;
@@ -107,19 +105,6 @@ namespace Server {
                 _clientSockets[socketId].Socket.BeginSend(data, 0, data.Length, SocketFlags.None, SendCallbakck, socketId);
             } catch (Exception) {
                 // ignored
-            }
-        }
-
-        private static void SendNewCharacter(int socketId) {
-            foreach (var clientSocket in _clientSockets) {
-                if (clientSocket.Key == socketId) {
-                    var data0 = new Connected(socketId).ToByteArray();
-                    SendData(clientSocket.Key, data0);
-                    continue;
-                }
-
-                var data1 = new NewProxyCharacter(socketId).ToByteArray();
-                SendData(clientSocket.Key, data1);
             }
         }
 

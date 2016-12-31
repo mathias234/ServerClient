@@ -2,11 +2,13 @@
 using Shared;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using Shared.Packets;
 
 namespace Assets {
-    public class PopulateCharacterSelection : MonoBehaviour {
+    public class CharacterSelection : MonoBehaviour {
         public GameObject CharacterTemplate;
-        public GameObject CharacterSelection;
+        public GameObject CharacterSelectionUi;
         public GameObject CreateNewButton;
 
         public int MaxCharacters;
@@ -24,14 +26,14 @@ namespace Assets {
         }
 
         public void Populate(List<Character> characters) {
-            foreach (Transform child in CharacterSelection.transform) {
+            foreach (Transform child in CharacterSelectionUi.transform) {
                 Destroy(child.gameObject);
                 _characters = 0;
             }
 
             foreach (var character in characters) {
                 var characterObj = Instantiate(CharacterTemplate);
-                characterObj.transform.SetParent(CharacterSelection.transform);
+                characterObj.transform.SetParent(CharacterSelectionUi.transform);
                 characterObj.transform.localScale = Vector3.one;
 
                 var uiCharacter = characterObj.GetComponent<UICharacter>();
@@ -54,6 +56,15 @@ namespace Assets {
 
                 _characters++;
             }
+        }
+
+        public void Play() {
+            if (_selectedCharacter == null)
+                return;
+
+            NetworkManager nm = FindObjectOfType<NetworkManager>();
+            nm.SendData(new FullCharacterUpdate(nm.SocketId, _selectedCharacterId).ToByteArray());
+            gameObject.SetActive(false);
         }
     }
 }

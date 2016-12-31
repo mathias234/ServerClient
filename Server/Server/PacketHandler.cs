@@ -139,6 +139,31 @@ namespace Server {
                         Server.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.Failed).ToByteArray());
                     }
                     break;
+                case PacketHeader.FullCharacterUpdate:
+                    var fullCharacterUpdate = (FullCharacterUpdate)packet.Value;
+
+                    FullCharacterUpdate dataToSend = null;
+
+                    if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where id={0}", fullCharacterUpdate.CharacterId), out reader)) {
+                        Log.Debug("Failed to find characters");
+                    } else {
+                        while (reader.Read()) {
+                            var id = (int)reader["id"];
+                            var name = (string)reader["characterName"];
+                            var level = (int)reader["characterLevel"];
+                            var charClass = (int)reader["characterClass"];
+                            var mapId = (int)reader["mapId"];
+                            var x = (float)reader["x"];
+                            var y = (float)reader["y"];
+                            var z = (float)reader["z"];
+
+                            dataToSend = new FullCharacterUpdate(socketId, id, name, level, charClass, mapId, x, y, z);
+                        }
+                        reader.Close();
+
+                        Server.SendData(socketId, dataToSend.ToByteArray());
+                    }
+                    break;
                 default:
                     break;
             }
