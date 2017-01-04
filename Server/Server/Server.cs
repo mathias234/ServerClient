@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using Shared;
 using Shared.Packets;
-
+using System.Linq;
 
 namespace Server {
     public class Server {
@@ -138,7 +138,7 @@ namespace Server {
 
         /// <summary>
         /// Will keep the socket
-        /// Make sure you update this when editing account.cs
+        /// Make sure you update this when editing Account.cs
         /// </summary>
         /// <param name="socketId"></param>
         /// <param name="newAccount"></param>
@@ -146,10 +146,30 @@ namespace Server {
             _clientSockets[socketId].AccountId = newAccount.AccountId;
             _clientSockets[socketId].Username = newAccount.Username;
             _clientSockets[socketId].Password = newAccount.Password;
+            _clientSockets[socketId].CharacterOnline = newAccount.CharacterOnline;
         }
 
         public static Account GetAccountFromSocketId(int socketId) {
             return _clientSockets[socketId];
+        }
+
+        public static int GetSocketIdFromAccountId(int accountId) {
+            var account = _clientSockets.First(keyValue => {
+                if (keyValue.Value.AccountId == accountId)
+                    return true;
+                return false;
+            });
+
+            return account.Key;
+        }
+
+        public static List<Account> GetAllAccounts() {
+            List<Account> accounts = new List<Account>();
+            foreach (var client in _clientSockets) {
+                accounts.Add(client.Value);
+            }
+
+            return accounts;
         }
 
         private static void SendCallbakck(IAsyncResult result) {

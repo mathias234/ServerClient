@@ -24,8 +24,6 @@ namespace Server {
                 case PacketHeader.Login:
                     var login = (Login)packet.Value;
 
-                    Log.Debug(login.Username + ":" + login.Password);
-
                     MySqlDataReader reader;
 
                     var accounts = new List<Account>();
@@ -39,7 +37,6 @@ namespace Server {
                         }
                         reader.Close();
                     }
-
 
                     foreach (var account in accounts) {
                         if (account.Username == login.Username && login.Password == account.Password) {
@@ -93,7 +90,12 @@ namespace Server {
                             var name = (string)reader["characterName"];
                             var level = (int)reader["characterLevel"];
                             var charClass = (int)reader["characterClass"];
-                            characters.Add(new Character(id, name, level, (CharacterClasses)charClass));
+                            var mapId = (int)reader["mapId"];
+                            var x = (float)reader["x"];
+                            var y = (float)reader["y"];
+                            var z = (float)reader["z"];
+
+                            characters.Add(new Character(socketId, id, name, level, (CharacterClasses)charClass, mapId, x, y, z));
                         }
                         reader.Close();
                     }
@@ -115,7 +117,12 @@ namespace Server {
                             var name = (string)reader["characterName"];
                             var level = (int)reader["characterLevel"];
                             var charClass = (int)reader["characterClass"];
-                            characters.Add(new Character(id, name, level, (CharacterClasses)charClass));
+                            var mapId = (int)reader["mapId"];
+                            var x = (float)reader["x"];
+                            var y = (float)reader["y"];
+                            var z = (float)reader["z"];
+
+                            characters.Add(new Character(-1, id, name, level, (CharacterClasses)charClass, mapId, x, y, z));
                         }
                         reader.Close();
                     }
@@ -126,10 +133,15 @@ namespace Server {
                     }
 
                     var createCharacterSql = string.Format(
-                    "INSERT INTO characters (accountId, characterName, characterLevel, characterClass) VALUES ({0}, '{1}', 1, {2});",
+                    "INSERT INTO characters (accountId, characterName, characterLevel, characterClass, mapId, x, y, z) VALUES ({0}, '{1}', 1, {2}, {3}, {4}, {5}, {6});",
                     Server.GetAccountFromSocketId(createCharacter.SocketId).AccountId,
                     createCharacter.Name,
-                    (int)createCharacter.CharClass);
+                    (int)createCharacter.CharClass,
+                    // This data is where the player will start. TODO: Remove hardcoding
+                    0,
+                    53.7f,
+                    100,
+                    35);
 
                     if (Server.MainDb.Run(createCharacterSql)) {
                         Log.Debug("successfully created character");
@@ -143,7 +155,7 @@ namespace Server {
 
                     FullCharacterUpdate dataToSend = null;
 
-                    if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where id={0}", fullCharacterUpdate.CharacterId), out reader)) {
+                    if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where id={0}", fullCharacterUpdate.NewCharacter.CharacterId), out reader)) {
                         Log.Debug("Failed to find characters");
                     } else {
                         while (reader.Read()) {
@@ -156,12 +168,43 @@ namespace Server {
                             var y = (float)reader["y"];
                             var z = (float)reader["z"];
 
-                            dataToSend = new FullCharacterUpdate(socketId, id, name, level, charClass, mapId, x, y, z);
+                            dataToSend = new FullCharacterUpdate(socketId, new Character(socketId, id, name, level, (CharacterClasses)charClass, mapId, x, y, z));
+                            Server.GetAccountFromSocketId(socketId).CharacterOnline = new Character(socketId, id, name, level, (CharacterClasses)charClass, mapId, x, y, z);
                         }
                         reader.Close();
 
                         Server.SendData(socketId, dataToSend.ToByteArray());
                     }
+                    break;
+                case PacketHeader.ConnectedToMap:
+                    var connectedToMap = (ConnectedToMap)packet.Value;
+
+                    // Send all players online
+                    var accountsInMap = Server.GetAllAccounts().FindAll(account => {
+                        if (account.CharacterOnline != null)
+                            if (account.CharacterOnline.MapId == connectedToMap.MapId)
+                                return true;
+                            else
+                                return false;
+                        else
+                            return false;
+                    });
+                    var charactersInMap = new List<Character>();
+
+                    foreach (var account in accountsInMap) {
+                        if (account.CharacterOnline != null)
+                            charactersInMap.Add(account.CharacterOnline);
+                    }
+                        
+                    Server.SendData(socketId, new CharactersInMap(socketId, charactersInMap).ToByteArray());
+
+                    foreach (var account in Server.GetAllAccounts()) {
+                        if (account.CharacterOnline.MapId == connectedToMap.MapId) {
+                            Console.WriteLine(account.CharacterOnline.Name);
+                            Server.SendData(Server.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
+                        }
+                    }
+
                     break;
                 default:
                     break;

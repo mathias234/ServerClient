@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -11,6 +12,7 @@ namespace Server {
         public Socket Socket;
         public string Username;
         public string Password;
+        public Character CharacterOnline;
 
         public Account() {
             

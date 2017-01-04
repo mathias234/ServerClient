@@ -43,13 +43,16 @@
     <Compile Include="Packets\AccountRegister.cs" />
     <Compile Include="Packets\AuthenticationRespons.cs" />
     <Compile Include="Packets\CharacterDisconnect.cs" />
+    <Compile Include="Packets\CharactersInMap.cs" />
     <Compile Include="Packets\Connected.cs" />
+    <Compile Include="Packets\ConnectedToMap.cs" />
     <Compile Include="Packets\CreateCharacter.cs" />
     <Compile Include="Packets\CreateCharacterRespons.cs" />
     <Compile Include="Packets\FullCharacterUpdate.cs" />
     <Compile Include="Packets\Login.cs" />
     <Compile Include="Packets\Movement.cs" />
     <Compile Include="Packets\INetworkPacket.cs" />
+    <Compile Include="Packets\NotifyOtherPlayerMapChange.cs" />
     <Compile Include="Packets\RegisterRespons.cs" />
     <Compile Include="Packets\RequestCharacters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

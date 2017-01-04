@@ -34,7 +34,10 @@ namespace Shared {
         CreateCharacter,
         CreateCharacterRespons,
         FullCharacterUpdate,
-        Movement
+        Movement,
+        ConnectedToMap,
+        CharactersInMap,
+        NotifyOtherPlayerMapChange // Notify the other players that a character either DCed or changed map
     }
 
     public class PacketCreator {
@@ -94,12 +97,7 @@ namespace Shared {
                         var characters = new List<Character>();
 
                         for (int i = 0; i < length; i++) {
-                            var id = br.ReadInt32();
-                            var name = br.ReadString();
-                            var level = br.ReadInt32();
-                            var charClass = (CharacterClasses) br.ReadByte();
-
-                            characters.Add(new Character(id, name, level, charClass));
+                            characters.Add(new Character(br));
                         }
 
                         return new Packet(header, new RequestCharacters(socketId, characters));
@@ -114,16 +112,28 @@ namespace Shared {
                         return new Packet(header, new CreateCharacterRespons(socketId, createCharacterRespons));
                     case PacketHeader.FullCharacterUpdate:
                         socketId = br.ReadInt32();
-                        var charId = br.ReadInt32();
-                        var charName = br.ReadString();
-                        var charLevel = br.ReadInt32();
-                        var chararacterClass = br.ReadInt32();
-                        var mapId = br.ReadInt32();
-                        var posX = br.ReadSingle();
-                        var posY = br.ReadSingle();
-                        var posZ = br.ReadSingle();
+   
 
-                        return new Packet(header, new FullCharacterUpdate(socketId, charId, charName, charLevel, chararacterClass, mapId, posX, posY, posZ));
+                        return new Packet(header, new FullCharacterUpdate(socketId, new Character(br)));
+                    case PacketHeader.ConnectedToMap:
+                        socketId = br.ReadInt32();
+                        var mapId = br.ReadInt32();
+
+                        return new Packet(header, new ConnectedToMap(socketId, mapId));
+                    case PacketHeader.CharactersInMap:
+                        socketId = br.ReadInt32();
+
+                        characters = new List<Character>();
+
+                        for (int i = 0; i < length; i++) {
+                            characters.Add(new Character(br));
+                        }
+
+                        return new Packet(header, new CharactersInMap(socketId, characters));
+                    case PacketHeader.NotifyOtherPlayerMapChange:
+                        socketId = br.ReadInt32();
+
+                        return new Packet(header, new NotifyOtherPlayerMapChange(socketId, new Character(br)));
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

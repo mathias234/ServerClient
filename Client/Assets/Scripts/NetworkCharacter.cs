@@ -8,8 +8,8 @@ public class NetworkCharacter : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 	    if (isLocal == true) {
-	        // send movement
-
-	    }
+            // send movement
+            socketId = FindObjectOfType<NetworkManager>().SocketId;
+        }
 	}
 }

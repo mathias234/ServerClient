@@ -29,11 +29,13 @@ public class NetworkManager : MonoBehaviour {
     public GameObject Password;
 
     public int SocketId;
+    public int CurrentMapId;
 
     public bool Send;
 
     public GameObject CharacterTemplate;
     public GameObject Character;
+
 
     public enum LoginStatus {
         Idle,
@@ -217,8 +219,33 @@ public class NetworkManager : MonoBehaviour {
                         // the server forces all this information to be updated
                         var fullCharacterUpdate = (FullCharacterUpdate)packet.Value;
                         // move to the correct zone
-                        var asyncOperation = SceneManager.LoadSceneAsync("map" + fullCharacterUpdate.MapId);
+                        var asyncOperation = SceneManager.LoadSceneAsync("map" + fullCharacterUpdate.NewCharacter.MapId);
+                        CurrentMapId = fullCharacterUpdate.NewCharacter.MapId;
                         StartCoroutine(LoadMap(asyncOperation, fullCharacterUpdate));
+                        break;
+                    case PacketHeader.CharactersInMap:
+                        var characersInMap = (CharactersInMap)packet.Value;
+                        foreach (var character in characersInMap.Characters) {
+                            if (character.SocketId != SocketId) {
+                                var proxy = Instantiate(ProxyCharacter);
+                                proxy.transform.position = new Vector3(character.X, character.Y, character.Z);
+                                proxy.GetComponent<NetworkCharacter>().socketId = character.SocketId;
+                            }
+                        }
+
+                        break;
+                    case PacketHeader.NotifyOtherPlayerMapChange:
+                        var notifyOtherPlayerMapChange = (NotifyOtherPlayerMapChange)packet.Value;
+
+                        Debug.Log("name: " + notifyOtherPlayerMapChange.Character.Name + " level: " + notifyOtherPlayerMapChange.Character.Level);
+
+                        if (notifyOtherPlayerMapChange.Character.MapId == CurrentMapId) {
+                            if (notifyOtherPlayerMapChange.Character.SocketId != SocketId) {
+                                var proxy = Instantiate(ProxyCharacter);
+                                proxy.transform.position = new Vector3(notifyOtherPlayerMapChange.Character.X, notifyOtherPlayerMapChange.Character.Y, notifyOtherPlayerMapChange.Character.Z);
+                                proxy.GetComponent<NetworkCharacter>().socketId = notifyOtherPlayerMapChange.Character.SocketId;
+                            }
+                        }
                         break;
                     default:
                         Debug.LogError("Unhandled packet received");
@@ -239,9 +266,13 @@ public class NetworkManager : MonoBehaviour {
         if (Character == null) {
             // instantiate the character
             Character = Instantiate(CharacterTemplate);
+            Character.GetComponent<NetworkCharacter>().isLocal = true;
         }
 
-        Character.transform.position = new Vector3(fcu.X, fcu.Y, fcu.Z);
+        Character.transform.position = new Vector3(fcu.NewCharacter.X, fcu.NewCharacter.Y, fcu.NewCharacter.Z);
+
+        // Inform the server that the client successfully connected to the map
+        SendData(new ConnectedToMap(SocketId, fcu.NewCharacter.MapId).ToByteArray());
     }
 
     public void RequestCharacters() {
