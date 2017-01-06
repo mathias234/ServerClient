@@ -18,6 +18,8 @@ namespace Server {
 
         public static Database MainDb;
 
+        public static int timeSinceLastSave;
+
 
         public static void Main(string[] args) {
             Console.Title = "MMO Server";
@@ -29,15 +31,23 @@ namespace Server {
             while (true) {
                 var consoleInput = Console.ReadLine();
                 if (consoleInput == null) continue;
-
-
                 switch (consoleInput.ToLower()) {
                     case "stop":
                         MainDb.CloseConnection();
                         return;
+                    case "save":
+                        Save();
+                        break;
                 }
             }
         }
+        private static void Save() {
+            foreach (var accounts in _clientSockets) {
+                Log.Debug("Saving");
+                var DbChar = new DbCharacter(accounts.Value.CharacterOnline);
+                DbChar.SaveToDb();
+            }
+        } 
 
         private static void SetupServer(int port) {
             Log.Debug("Setting up server...");
@@ -54,9 +64,7 @@ namespace Server {
 
             _clientSockets.Add(LastKey, /* a temporary account */ new Account(-1, "", "", socket));
 
-
             Log.Debug("Client Connected");
-
 
             SendData(LastKey, new Connected(LastKey).ToByteArray());
 
@@ -97,6 +105,7 @@ namespace Server {
         // This probably should inform the other players that someone disconnected
         public static void CleanupDisconnectedPlayer(int socketId) {
             if (_clientSockets.ContainsKey(socketId)) {
+                new DbCharacter(_clientSockets[socketId].CharacterOnline).SaveToDb();
                 SendCharacterDisconnect(socketId);
                 _clientSockets[socketId].Socket.Shutdown(SocketShutdown.Both);
                 _clientSockets.Remove(socketId);

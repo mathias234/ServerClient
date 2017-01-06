@@ -9,6 +9,8 @@ using Shared.Packets;
 
 namespace Server {
     public class PacketHandler {
+        private static Character tempCharacter; // useful for storing temporary copy of a character without creating a new instance(saving a few bytes of memory :P)
+
         public static int HandlePacket(int socketId, Packet packet) {
             if (packet?.Header == null)
                 return 0;
@@ -16,6 +18,14 @@ namespace Server {
             switch (packet.Header) {
                 case PacketHeader.Movement:
                     var movement = (Movement)packet.Value;
+
+                    tempCharacter = Server.GetAccountFromSocketId(socketId).CharacterOnline;
+
+                    tempCharacter.X = movement.NewPosition.X;
+                    tempCharacter.Y = movement.NewPosition.Y;
+                    tempCharacter.Z = movement.NewPosition.Z;
+
+                    Server.GetAccountFromSocketId(socketId).CharacterOnline = tempCharacter;
 
                     // send this new position to all players
                     Server.SendMovement(movement.SocketId, movement.NewPosition, movement.YRotation, movement.Forward,
@@ -195,7 +205,7 @@ namespace Server {
                         if (account.CharacterOnline != null)
                             charactersInMap.Add(account.CharacterOnline);
                     }
-                        
+
                     Server.SendData(socketId, new CharactersInMap(socketId, charactersInMap).ToByteArray());
 
                     foreach (var account in Server.GetAllAccounts()) {
@@ -205,6 +215,17 @@ namespace Server {
                         }
                     }
 
+                    break;
+                case PacketHeader.ChangeMap:
+                    var changeMap = (ChangeMap)packet.Value;
+
+                    Server.GetAccountFromSocketId(socketId).CharacterOnline.MapId = changeMap.NewMapId;
+
+                    DbCharacter dbChar = new DbCharacter(Server.GetAccountFromSocketId(socketId).CharacterOnline);
+                    dbChar.SaveToDb();
+
+                    
+                    Server.SendData(socketId, new FullCharacterUpdate(socketId, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
                     break;
                 default:
                     break;

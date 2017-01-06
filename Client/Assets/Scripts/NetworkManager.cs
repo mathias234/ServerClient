@@ -86,6 +86,10 @@ public class NetworkManager : MonoBehaviour {
 
     public void Update() {
         SendMovement();
+
+        if (Input.GetKeyDown(KeyCode.F)) {
+            SendData(new ChangeMap(SocketId, CurrentMapId, 1).ToByteArray());
+        }
     }
 
     private void SendMovement() {
@@ -238,6 +242,15 @@ public class NetworkManager : MonoBehaviour {
                         var notifyOtherPlayerMapChange = (NotifyOtherPlayerMapChange)packet.Value;
 
                         Debug.Log("name: " + notifyOtherPlayerMapChange.Character.Name + " level: " + notifyOtherPlayerMapChange.Character.Level);
+
+                        foreach (var netCharacter in GetComponents<NetworkCharacter>()) {
+                            if(netCharacter.socketId == notifyOtherPlayerMapChange.Character.SocketId) {
+                                if (CurrentMapId != notifyOtherPlayerMapChange.Character.MapId) {
+                                    // this character has either DCed or changed map
+                                    Destroy(netCharacter.gameObject);
+                                }
+                            }
+                        }
 
                         if (notifyOtherPlayerMapChange.Character.MapId == CurrentMapId) {
                             if (notifyOtherPlayerMapChange.Character.SocketId != SocketId) {

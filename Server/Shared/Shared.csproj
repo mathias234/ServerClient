@@ -42,6 +42,7 @@
     <Compile Include="PacketCreator.cs" />
     <Compile Include="Packets\AccountRegister.cs" />
     <Compile Include="Packets\AuthenticationRespons.cs" />
+    <Compile Include="Packets\ChangeMap.cs" />
     <Compile Include="Packets\CharacterDisconnect.cs" />
     <Compile Include="Packets\CharactersInMap.cs" />
     <Compile Include="Packets\Connected.cs" />

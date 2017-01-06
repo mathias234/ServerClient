@@ -37,10 +37,12 @@ namespace Shared {
         Movement,
         ConnectedToMap,
         CharactersInMap,
-        NotifyOtherPlayerMapChange // Notify the other players that a character either DCed or changed map
+        NotifyOtherPlayerMapChange, // Notify the other players that a character either DCed or changed map
+        ChangeMap
     }
 
     public class PacketCreator {
+        // TODO: Make dynamic packet reader and writer
         public static Packet ReadPacket(byte[] data) {
             var br = new BinaryReader(new MemoryStream(data));
 
@@ -134,6 +136,12 @@ namespace Shared {
                         socketId = br.ReadInt32();
 
                         return new Packet(header, new NotifyOtherPlayerMapChange(socketId, new Character(br)));
+                    case PacketHeader.ChangeMap:
+                        socketId = br.ReadInt32();
+                        var oldMapId = br.ReadInt32();
+                        var newMapId = br.ReadInt32();
+
+                        return new Packet(header, new ChangeMap(socketId, oldMapId, newMapId));
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
