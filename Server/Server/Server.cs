@@ -20,7 +20,6 @@ namespace Server {
 
         public static int timeSinceLastSave;
 
-
         public static void Main(string[] args) {
             Console.Title = "MMO Server";
             Log.Debug("Opening a DB connection");
@@ -57,6 +56,7 @@ namespace Server {
 
             _serverSocket.Listen(5);
             _serverSocket.BeginAccept(AcceptCallback, null);
+            Log.Debug("Server Started");
         }
 
         private static void AcceptCallback(IAsyncResult result) {

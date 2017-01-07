@@ -37,6 +37,8 @@ namespace Server {
         }
 
         public bool Run(string sqlString, out MySqlDataReader reader) {
+            Log.Debug("running query: " + sqlString);
+
             try {
                 var cmd = new MySqlCommand(sqlString, _connection);
                 cmd.ExecuteNonQuery();
@@ -57,9 +59,10 @@ namespace Server {
 
 
         public bool Run(string sqlString) {
-            MySqlDataReader reader;
-
-            return Run(sqlString, out reader);
+            var result = Run(sqlString, out var reader);
+            if (reader != null)
+                reader.Close();
+            return result;
         }
 
         public bool CloseConnection() {

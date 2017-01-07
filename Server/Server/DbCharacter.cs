@@ -1,4 +1,5 @@
-﻿using Shared;
+﻿using MySql.Data.MySqlClient;
+using Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,9 +28,27 @@ namespace Server {
             Server.MainDb.Run(query);
         }
 
-        public static Character GetFromDb() {
+        public static Character GetFromDb(int charId) {
+            if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where id={0}", charId), out var reader)) {
+                Log.Debug("Failed to find characters");
+            } else {
+                while (reader.Read()) {
+                    var id = (int)reader["id"];
+                    var name = (string)reader["characterName"];
+                    var level = (int)reader["characterLevel"];
+                    var charClass = (int)reader["characterClass"];
+                    var mapId = (int)reader["mapId"];
+                    var x = (float)reader["x"];
+                    var y = (float)reader["y"];
+                    var z = (float)reader["z"];
 
-            return new Character(0, 0, "", 0, CharacterClasses.Agent, 0, 0, 0, 0);
+                    reader.Close();
+
+                    return new Character(-1, id, name, level, (CharacterClasses)charClass, mapId, x, y, z);
+                }
+            }
+
+            return null;
         }
     }
 }

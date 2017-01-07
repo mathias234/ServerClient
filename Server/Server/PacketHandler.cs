@@ -88,7 +88,6 @@ namespace Server {
                     }
                     break;
                 case PacketHeader.RequestCharacters:
-
                     var characters = new List<Character>();
 
                     if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where accountId={0};",
@@ -165,30 +164,18 @@ namespace Server {
 
                     FullCharacterUpdate dataToSend = null;
 
-                    if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where id={0}", fullCharacterUpdate.NewCharacter.CharacterId), out reader)) {
-                        Log.Debug("Failed to find characters");
-                    } else {
-                        while (reader.Read()) {
-                            var id = (int)reader["id"];
-                            var name = (string)reader["characterName"];
-                            var level = (int)reader["characterLevel"];
-                            var charClass = (int)reader["characterClass"];
-                            var mapId = (int)reader["mapId"];
-                            var x = (float)reader["x"];
-                            var y = (float)reader["y"];
-                            var z = (float)reader["z"];
+                    var dbCharacter = DbCharacter.GetFromDb(fullCharacterUpdate.NewCharacter.CharacterId);
+                    dbCharacter.SocketId = socketId;
 
-                            dataToSend = new FullCharacterUpdate(socketId, new Character(socketId, id, name, level, (CharacterClasses)charClass, mapId, x, y, z));
-                            Server.GetAccountFromSocketId(socketId).CharacterOnline = new Character(socketId, id, name, level, (CharacterClasses)charClass, mapId, x, y, z);
-                        }
-                        reader.Close();
+                    Server.GetAccountFromSocketId(socketId).CharacterOnline = dbCharacter;
 
-                        Server.SendData(socketId, dataToSend.ToByteArray());
-                    }
+                    dataToSend = new FullCharacterUpdate(socketId, dbCharacter);
+                    Server.SendData(socketId, dataToSend.ToByteArray());
+
                     break;
                 case PacketHeader.ConnectedToMap:
                     var connectedToMap = (ConnectedToMap)packet.Value;
-
+                    
                     // Send all players online
                     var accountsInMap = Server.GetAllAccounts().FindAll(account => {
                         if (account.CharacterOnline != null)
@@ -224,7 +211,6 @@ namespace Server {
                     DbCharacter dbChar = new DbCharacter(Server.GetAccountFromSocketId(socketId).CharacterOnline);
                     dbChar.SaveToDb();
 
-                    
                     Server.SendData(socketId, new FullCharacterUpdate(socketId, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
                     break;
                 default:
