@@ -11,6 +11,7 @@ namespace Shared.Packets {
 
         public ConnectedToMap(int socketId, int mapId) {
             SocketId = socketId;
+            MapId = mapId;
         }
 
         public byte[] ToByteArray() {

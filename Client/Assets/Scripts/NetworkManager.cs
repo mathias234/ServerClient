@@ -245,12 +245,13 @@ public class NetworkManager : MonoBehaviour {
                     case PacketHeader.NotifyOtherPlayerMapChange:
                         var notifyOtherPlayerMapChange = (NotifyOtherPlayerMapChange)packet.Value;
 
-                        Debug.Log("name: " + notifyOtherPlayerMapChange.Character.Name + " level: " + notifyOtherPlayerMapChange.Character.Level);
+                        Debug.Log("name: " + notifyOtherPlayerMapChange.Character.Name + " level: " + notifyOtherPlayerMapChange.Character.Level + " newMap: " + notifyOtherPlayerMapChange.Character.MapId);
 
                         foreach (var netCharacter in GetComponents<NetworkCharacter>()) {
                             if(netCharacter.socketId == notifyOtherPlayerMapChange.Character.SocketId) {
                                 if (CurrentMapId != notifyOtherPlayerMapChange.Character.MapId) {
                                     // this character has either DCed or changed map
+                                    Debug.Log("character left my map");
                                     Destroy(netCharacter.gameObject);
                                 }
                             }
@@ -287,6 +288,8 @@ public class NetworkManager : MonoBehaviour {
         }
 
         Character.transform.position = new Vector3(fcu.NewCharacter.X, fcu.NewCharacter.Y, fcu.NewCharacter.Z);
+
+        Debug.Log(fcu.NewCharacter.MapId);
 
         // Inform the server that the client successfully connected to the map
         SendData(new ConnectedToMap(SocketId, fcu.NewCharacter.MapId).ToByteArray());
