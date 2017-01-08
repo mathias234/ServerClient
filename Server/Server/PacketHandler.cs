@@ -196,6 +196,7 @@ namespace Server {
                     Server.SendData(socketId, new CharactersInMap(socketId, charactersInMap).ToByteArray());
 
                     foreach (var account in Server.GetAllAccounts()) {
+                        if (account.CharacterOnline == null) continue; // probably not logged in yet
                         if (account.CharacterOnline.MapId == connectedToMap.MapId) {
                             Console.WriteLine(account.CharacterOnline.Name);
                             Server.SendData(Server.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
