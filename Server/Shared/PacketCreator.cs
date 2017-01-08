@@ -140,8 +140,11 @@ namespace Shared {
                         socketId = br.ReadInt32();
                         var oldMapId = br.ReadInt32();
                         var newMapId = br.ReadInt32();
+                        var newX = br.ReadSingle();
+                        var newY = br.ReadSingle();
+                        var newZ = br.ReadSingle();
 
-                        return new Packet(header, new ChangeMap(socketId, oldMapId, newMapId));
+                        return new Packet(header, new ChangeMap(socketId, oldMapId, newMapId, newX, newY, newZ));
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

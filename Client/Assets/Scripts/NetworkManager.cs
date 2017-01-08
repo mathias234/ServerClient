@@ -88,7 +88,11 @@ public class NetworkManager : MonoBehaviour {
         SendMovement();
 
         if (Input.GetKeyDown(KeyCode.F)) {
-            SendData(new ChangeMap(SocketId, CurrentMapId, 1).ToByteArray());
+            SendData(new ChangeMap(SocketId, CurrentMapId, 1, 53, 65, 35).ToByteArray());
+        }
+
+        if (Input.GetKeyDown(KeyCode.G)) {
+            SendData(new ChangeMap(SocketId, CurrentMapId, 0, 10.11f, 21, 0).ToByteArray());
         }
     }
 

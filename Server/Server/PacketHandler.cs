@@ -207,6 +207,9 @@ namespace Server {
                     var changeMap = (ChangeMap)packet.Value;
 
                     Server.GetAccountFromSocketId(socketId).CharacterOnline.MapId = changeMap.NewMapId;
+                    Server.GetAccountFromSocketId(socketId).CharacterOnline.X = changeMap.NewX;
+                    Server.GetAccountFromSocketId(socketId).CharacterOnline.Y = changeMap.NewY;
+                    Server.GetAccountFromSocketId(socketId).CharacterOnline.Z = changeMap.NewZ;
 
                     DbCharacter dbChar = new DbCharacter(Server.GetAccountFromSocketId(socketId).CharacterOnline);
                     dbChar.SaveToDb();
