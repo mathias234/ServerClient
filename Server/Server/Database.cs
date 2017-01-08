@@ -37,8 +37,6 @@ namespace Server {
         }
 
         public bool Run(string sqlString, out MySqlDataReader reader) {
-            Log.Debug("running query: " + sqlString);
-
             try {
                 var cmd = new MySqlCommand(sqlString, _connection);
                 cmd.ExecuteNonQuery();

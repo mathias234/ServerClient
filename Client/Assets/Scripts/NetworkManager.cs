@@ -247,12 +247,15 @@ public class NetworkManager : MonoBehaviour {
 
                         Debug.Log("name: " + notifyOtherPlayerMapChange.Character.Name + " level: " + notifyOtherPlayerMapChange.Character.Level + " newMap: " + notifyOtherPlayerMapChange.Character.MapId);
 
-                        foreach (var netCharacter in GetComponents<NetworkCharacter>()) {
-                            if(netCharacter.socketId == notifyOtherPlayerMapChange.Character.SocketId) {
+                        foreach (var netCharacter in GameObject.FindObjectsOfType<NetworkCharacter>()) {
+                            if (netCharacter.socketId == notifyOtherPlayerMapChange.Character.SocketId) {
+                                Debug.Log("found a matching netCharacter");
                                 if (CurrentMapId != notifyOtherPlayerMapChange.Character.MapId) {
                                     // this character has either DCed or changed map
                                     Debug.Log("character left my map");
                                     Destroy(netCharacter.gameObject);
+                                } else {
+                                    return;
                                 }
                             }
                         }
