@@ -82,6 +82,9 @@ namespace Server {
                         return 0;
                     }
 
+                    // fix for probleme where mysql breaks if a password contains '
+                    register.Password = register.Password.Replace('\'', '3');
+
                     if (Server.MainDb.Run("INSERT INTO `accounts` (`username`, `password`) VALUES " +
                                           "('" + register.Username + "', '" + register.Password + "');")) {
                         Server.SendData(socketId, new RegisterRespons(socketId, RegisterRespons.RegisterResponses.Success).ToByteArray());
@@ -168,7 +171,6 @@ namespace Server {
                     dbCharacter.SocketId = socketId;
 
                     Server.GetAccountFromSocketId(socketId).CharacterOnline = dbCharacter;
-                    Log.Debug("assinging character: " + dbCharacter.Name + " to acc: " + Server.GetAccountFromSocketId(socketId).AccountId);
 
                     dataToSend = new FullCharacterUpdate(socketId, dbCharacter);
                     Server.SendData(socketId, dataToSend.ToByteArray());
@@ -197,6 +199,9 @@ namespace Server {
                     Server.SendData(socketId, new CharactersInMap(socketId, charactersInMap).ToByteArray());
                     Server.GetAccountFromSocketId(socketId).CharacterOnline.MapId = connectedToMap.MapId;
 
+                    foreach (var account in Server.GetAllAccounts()) {
+                        Server.SendData(Server.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, -1, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
+                    }
 
                     break;
                 case PacketHeader.ChangeMap:
