@@ -9,8 +9,6 @@ using Shared.Packets;
 
 namespace Server {
     public class PacketHandler {
-        private static Character tempCharacter; // useful for storing temporary copy of a character without creating a new instance(saving a few bytes of memory :P)
-
         public static int HandlePacket(int socketId, Packet packet) {
             if (packet?.Header == null)
                 return 0;
@@ -19,7 +17,7 @@ namespace Server {
                 case PacketHeader.Movement:
                     var movement = (Movement)packet.Value;
 
-                    tempCharacter = Server.GetAccountFromSocketId(movement.SocketId).CharacterOnline;
+                    var tempCharacter = Server.GetAccountFromSocketId(movement.SocketId).CharacterOnline;
 
                     tempCharacter.X = movement.NewPosition.X;
                     tempCharacter.Y = movement.NewPosition.Y;
@@ -47,6 +45,9 @@ namespace Server {
                         }
                         reader.Close();
                     }
+
+                    // fix for probleme where mysql breaks if a password contains '
+                    login.Password = login.Password.Replace('\'', '3');
 
                     foreach (var account in accounts) {
                         if (account.Username == login.Username && login.Password == account.Password) {
