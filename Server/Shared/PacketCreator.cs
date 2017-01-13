@@ -135,7 +135,7 @@ namespace Shared {
                     case PacketHeader.NotifyOtherPlayerMapChange:
                         socketId = br.ReadInt32();
 
-                        return new Packet(header, new NotifyOtherPlayerMapChange(socketId, new Character(br)));
+                        return new Packet(header, new NotifyOtherPlayerMapChange(socketId, br.ReadInt32(), new Character(br)));
                     case PacketHeader.ChangeMap:
                         socketId = br.ReadInt32();
                         var oldMapId = br.ReadInt32();

@@ -7,9 +7,12 @@ using System.Text;
 namespace Shared.Packets {
     public class NotifyOtherPlayerMapChange {
         public int SocketId { get; set; }
+        public int OldMapId;
         public Character Character;
-        public NotifyOtherPlayerMapChange(int socketId, Character character) {
+
+        public NotifyOtherPlayerMapChange(int socketId, int oldMapId, Character character) {
             SocketId = socketId;
+            OldMapId = oldMapId;
             Character = character;
         }
 
@@ -22,6 +25,8 @@ namespace Shared.Packets {
             bw.Write(length);
 
             bw.Write(SocketId);
+
+            bw.Write(OldMapId);
 
             bw.Write(Character.ToByteArray());
 

@@ -250,7 +250,7 @@ public class NetworkManager : MonoBehaviour {
                         foreach (var netCharacter in GameObject.FindObjectsOfType<NetworkCharacter>()) {
                             if (netCharacter.socketId == notifyOtherPlayerMapChange.Character.SocketId) {
                                 Debug.Log("found a matching netCharacter");
-                                if (CurrentMapId != notifyOtherPlayerMapChange.Character.MapId) {
+                                if (CurrentMapId == notifyOtherPlayerMapChange.OldMapId) {
                                     // this character has either DCed or changed map
                                     Debug.Log("character left my map");
                                     Destroy(netCharacter.gameObject);

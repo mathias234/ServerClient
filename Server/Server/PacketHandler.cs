@@ -19,13 +19,13 @@ namespace Server {
                 case PacketHeader.Movement:
                     var movement = (Movement)packet.Value;
 
-                    tempCharacter = Server.GetAccountFromSocketId(socketId).CharacterOnline;
+                    tempCharacter = Server.GetAccountFromSocketId(movement.SocketId).CharacterOnline;
 
                     tempCharacter.X = movement.NewPosition.X;
                     tempCharacter.Y = movement.NewPosition.Y;
                     tempCharacter.Z = movement.NewPosition.Z;
 
-                    Server.GetAccountFromSocketId(socketId).CharacterOnline = tempCharacter;
+                    Server.GetAccountFromSocketId(movement.SocketId).CharacterOnline = tempCharacter;
 
                     // send this new position to all players
                     Server.SendMovement(movement.SocketId, movement.NewPosition, movement.YRotation, movement.Forward,
@@ -168,6 +168,7 @@ namespace Server {
                     dbCharacter.SocketId = socketId;
 
                     Server.GetAccountFromSocketId(socketId).CharacterOnline = dbCharacter;
+                    Log.Debug("assinging character: " + dbCharacter.Name + " to acc: " + Server.GetAccountFromSocketId(socketId).AccountId);
 
                     dataToSend = new FullCharacterUpdate(socketId, dbCharacter);
                     Server.SendData(socketId, dataToSend.ToByteArray());
@@ -175,7 +176,7 @@ namespace Server {
                     break;
                 case PacketHeader.ConnectedToMap:
                     var connectedToMap = (ConnectedToMap)packet.Value;
-                    
+
                     // Send all players online
                     var accountsInMap = Server.GetAllAccounts().FindAll(account => {
                         if (account.CharacterOnline != null)
@@ -196,12 +197,6 @@ namespace Server {
                     Server.SendData(socketId, new CharactersInMap(socketId, charactersInMap).ToByteArray());
                     Server.GetAccountFromSocketId(socketId).CharacterOnline.MapId = connectedToMap.MapId;
 
-                    foreach (var account in Server.GetAllAccounts()) {
-                        if (account.CharacterOnline == null) continue; // probably not logged in yet
-                        if (account.CharacterOnline.MapId == connectedToMap.MapId) {
-                            Server.SendData(Server.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
-                        }
-                    }
 
                     break;
                 case PacketHeader.ChangeMap:
@@ -216,6 +211,11 @@ namespace Server {
                     dbChar.SaveToDb();
 
                     Server.SendData(socketId, new FullCharacterUpdate(socketId, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
+
+                    foreach (var account in Server.GetAllAccounts()) {
+                        Server.SendData(Server.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, changeMap.OldMapId, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
+                    }
+
                     break;
                 default:
                     break;
