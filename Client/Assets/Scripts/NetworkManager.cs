@@ -87,12 +87,13 @@ public class NetworkManager : MonoBehaviour {
     public void Update() {
         SendMovement();
 
-        if (Input.GetKeyDown(KeyCode.F)) {
-            SendData(new ChangeMap(SocketId, CurrentMapId, 1, 53, 65, 35).ToByteArray());
-        }
 
-        if (Input.GetKeyDown(KeyCode.G)) {
+        if (Input.GetKeyDown(KeyCode.Alpha0)) {
             SendData(new ChangeMap(SocketId, CurrentMapId, 0, 10.11f, 21, 0).ToByteArray());
+        } else if (Input.GetKeyDown(KeyCode.Alpha1)) {
+            SendData(new ChangeMap(SocketId, CurrentMapId, 1, 53, 65, 35).ToByteArray());
+        } else if (Input.GetKeyDown(KeyCode.Alpha2)) {
+            SendData(new ChangeMap(SocketId, CurrentMapId, 2, 145, 107, 237).ToByteArray());
         }
     }
 
@@ -115,7 +116,7 @@ public class NetworkManager : MonoBehaviour {
                 position.x, position.y, position.z), yRotation, forward, turn, crouch, onGround, jump, jumpLeg).ToByteArray();
 
             SendData(buffer);
-        } catch (Exception ex) {
+        } catch (Exception) {
             //Debug.Log("Failed to send data " + ex.Message);
         }
     }
