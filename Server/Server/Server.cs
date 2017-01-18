@@ -134,14 +134,17 @@ namespace Server {
 
         // sends the xyz to all players
         public static void SendMovement(int socketId, NetworkVector3 vector3, float yRotation, float forward, float turn, bool crouch, bool onGround, float jump, float jumpLeg) {
-            foreach (var clientSocket in _clientSockets) {
-                if (clientSocket.Key == socketId) {
-                    // this is the socket that sent the movement
-                    continue;
-                }
+            try {
+                foreach (var clientSocket in _clientSockets) {
+                    if (clientSocket.Key == socketId) {
+                        // this is the socket that sent the movement
+                        continue;
+                    }
 
-                var data = new Movement(socketId, vector3, yRotation, forward, turn, crouch, onGround, jump, jumpLeg).ToByteArray();
-                SendData(clientSocket.Key, data);
+                    var data = new Movement(socketId, vector3, yRotation, forward, turn, crouch, onGround, jump, jumpLeg).ToByteArray();
+                    SendData(clientSocket.Key, data);
+                }
+            } catch {
             }
         }
 

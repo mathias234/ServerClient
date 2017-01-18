@@ -153,7 +153,7 @@ namespace Shared {
             }
             // return the bytes
             catch (Exception ex) {
-                Console.WriteLine("Failed to read packet: " + ex.Message);
+                Console.WriteLine("Failed to read packet: " + ex.Message + " : " + header.ToString());
                 return null;
             }
         }
