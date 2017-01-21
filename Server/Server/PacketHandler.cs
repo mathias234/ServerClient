@@ -9,13 +9,13 @@ using Shared.Packets;
 
 namespace Server {
     public class PacketHandler {
-        public static int HandlePacket(int socketId, Packet packet) {
+        public static int HandlePacket(int socketId, BaseNetworkPacket packet) {
             if (packet?.Header == null)
                 return 0;
 
             switch (packet.Header) {
                 case PacketHeader.Movement:
-                    var movement = (Movement)packet.Value;
+                    var movement = (Movement)packet;
 
                     var tempCharacter = Server.GetAccountFromSocketId(movement.SocketId).CharacterOnline;
 
@@ -30,7 +30,7 @@ namespace Server {
                         movement.Turn, movement.Crouch, movement.OnGround, movement.Jump, movement.JumpLeg);
                     break;
                 case PacketHeader.Login:
-                    var login = (Login)packet.Value;
+                    var login = (Login)packet;
 
                     MySqlDataReader reader;
 
@@ -62,8 +62,8 @@ namespace Server {
                     Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed).ToByteArray());
 
                     break;
-                case PacketHeader.Register:
-                    var register = (AccountRegister)packet.Value;
+                case PacketHeader.AccountRegister:
+                    var register = (AccountRegister)packet;
 
                     accounts = new List<Account>();
 
@@ -116,7 +116,7 @@ namespace Server {
                     Server.SendData(socketId, new RequestCharacters(socketId, characters).ToByteArray());
                     break;
                 case PacketHeader.CreateCharacter:
-                    var createCharacter = (CreateCharacter)packet.Value;
+                    var createCharacter = (CreateCharacter)packet;
                     Log.Debug("Creating character with name: " + createCharacter.Name + " and class " + createCharacter.CharClass);
 
                     characters = new List<Character>();
@@ -164,7 +164,7 @@ namespace Server {
                     }
                     break;
                 case PacketHeader.FullCharacterUpdate:
-                    var fullCharacterUpdate = (FullCharacterUpdate)packet.Value;
+                    var fullCharacterUpdate = (FullCharacterUpdate)packet;
 
                     FullCharacterUpdate dataToSend = null;
 
@@ -178,7 +178,7 @@ namespace Server {
 
                     break;
                 case PacketHeader.ConnectedToMap:
-                    var connectedToMap = (ConnectedToMap)packet.Value;
+                    var connectedToMap = (ConnectedToMap)packet;
 
                     // Send all players online
                     var accountsInMap = Server.GetAllAccounts().FindAll(account => {
@@ -206,7 +206,7 @@ namespace Server {
 
                     break;
                 case PacketHeader.ChangeMap:
-                    var changeMap = (ChangeMap)packet.Value;
+                    var changeMap = (ChangeMap)packet;
 
                     Server.GetAccountFromSocketId(socketId).CharacterOnline.MapId = changeMap.NewMapId;
                     Server.GetAccountFromSocketId(socketId).CharacterOnline.X = changeMap.NewX;

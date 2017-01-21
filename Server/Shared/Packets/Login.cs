@@ -5,12 +5,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class Login : INetworkPacket {
-        public int SocketId;
+    public class Login : BaseNetworkPacket, INetworkPacket<Login> {
         public string Username;
         public string Password;
-
-        public int Size => 0;
 
         public Login() {
             SocketId = -1;
@@ -24,13 +21,19 @@ namespace Shared.Packets {
             Password = password;
         }
 
+        public Login FromByteArray(byte[] byteArray) {
+            var br = new BinaryReader(new MemoryStream(byteArray));
+
+            Header = (PacketHeader)br.ReadInt32();
+            SocketId = br.ReadInt32();
+            Username = br.ReadString();
+            Password = br.ReadString();
+            return this;
+        }
+
         public byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.Login);
-
-            var length = Size; // not required
-
-            bw.Write(length);
 
             bw.Write(SocketId);
 

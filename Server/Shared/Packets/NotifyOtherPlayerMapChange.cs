@@ -5,10 +5,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class NotifyOtherPlayerMapChange {
-        public int SocketId { get; set; }
+    public class NotifyOtherPlayerMapChange : BaseNetworkPacket, INetworkPacket<NotifyOtherPlayerMapChange> {
         public int OldMapId;
         public Character Character;
+
+        public NotifyOtherPlayerMapChange() {
+            SocketId = -1;
+            OldMapId = -1;
+            Character = null;
+        }
 
         public NotifyOtherPlayerMapChange(int socketId, int oldMapId, Character character) {
             SocketId = socketId;
@@ -16,18 +21,24 @@ namespace Shared.Packets {
             Character = character;
         }
 
+        public NotifyOtherPlayerMapChange FromByteArray(byte[] byteArray) {
+            var br = new BinaryReader(new MemoryStream(byteArray));
+
+            Header = (PacketHeader)br.ReadInt32();
+            SocketId = br.ReadInt32();
+            OldMapId = br.ReadInt32();
+
+            Character = new Character(br);
+
+            return this;
+        }
+
         public byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.NotifyOtherPlayerMapChange);
 
-            var length = Marshal.SizeOf(SocketId); // not required
-
-            bw.Write(length);
-
             bw.Write(SocketId);
-
             bw.Write(OldMapId);
-
             bw.Write(Character.ToByteArray());
 
             var data = ((MemoryStream)bw.BaseStream).ToArray();

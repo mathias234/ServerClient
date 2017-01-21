@@ -5,10 +5,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class AccountRegister : INetworkPacket {
-        public int SocketId { get; set; }
+    public class AccountRegister : BaseNetworkPacket, INetworkPacket<AccountRegister> {
         public string Username { get; set; }
         public string Password { get; set; }
+
+        public AccountRegister() {
+            SocketId = -1;
+            Username = "";
+            Username = "";
+        }
 
         public AccountRegister(int socketId, string username, string password) {
             SocketId = socketId;
@@ -16,13 +21,20 @@ namespace Shared.Packets {
             Password = password;
         }
 
+        public AccountRegister FromByteArray(byte[] byteArray) {
+            var br = new BinaryReader(new MemoryStream(byteArray));
+
+            Header = (PacketHeader)br.ReadInt32();
+            SocketId = br.ReadInt32();
+            Username = br.ReadString();
+            Password = br.ReadString();
+
+            return this;
+        }
+
         public byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
-            bw.Write((int)PacketHeader.Register);
-
-            var length = Marshal.SizeOf(SocketId); // not required
-
-            bw.Write(length);
+            bw.Write((int)PacketHeader.AccountRegister);
 
             bw.Write(SocketId);
             bw.Write(Username);

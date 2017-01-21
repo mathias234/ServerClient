@@ -140,12 +140,8 @@ public class NetworkManager : MonoBehaviour {
                 GameObject.FindGameObjectWithTag("Player");
 
                 switch (packet.Header) {
-                    case PacketHeader.GetTime:
-                        break;
-                    case PacketHeader.Ping:
-                        break;
                     case PacketHeader.Movement:
-                        var movement = (Movement)packet.Value;
+                        var movement = (Movement)packet;
 
                         foreach (var networkCharacter in FindObjectsOfType<NetworkCharacter>()) {
                             if (networkCharacter.socketId == movement.SocketId) {
@@ -169,19 +165,19 @@ public class NetworkManager : MonoBehaviour {
                     case PacketHeader.CharacterDisconnect:
                         var peopleOnline = FindObjectsOfType<NetworkCharacter>();
                         foreach (var online in peopleOnline) {
-                            if (online.socketId == ((CharacterDisconnect)packet.Value).SocketId) {
+                            if (online.socketId == ((CharacterDisconnect)packet).SocketId) {
                                 Destroy(online.gameObject);
                             }
                         }
                         break;
                     case PacketHeader.Connected:
-                        SocketId = ((Connected)packet.Value).SocketId;
+                        SocketId = ((Connected)packet).SocketId;
 
                         if (CurrentLoginStatus == LoginStatus.Connecting)
                             Authenticate();
                         break;
                     case PacketHeader.RegisterRespons:
-                        var regRespons = (RegisterRespons)packet.Value;
+                        var regRespons = (RegisterRespons)packet;
 
                         switch (regRespons.Respons) {
                             case RegisterRespons.RegisterResponses.Success:
@@ -197,7 +193,7 @@ public class NetworkManager : MonoBehaviour {
 
                         break;
                     case PacketHeader.AuthenticationRespons:
-                        var respons = (AuthenticationRespons)packet.Value;
+                        var respons = (AuthenticationRespons)packet;
 
                         if (respons.Respons == AuthenticationRespons.AuthenticationResponses.Success) {
                             CurrentLoginStatus = LoginStatus.Connected;
@@ -209,7 +205,7 @@ public class NetworkManager : MonoBehaviour {
                         Debug.Log("Recieved authentication respons: " + respons.Respons.ToString());
                         break;
                     case PacketHeader.RequestCharacters:
-                        var characters = (RequestCharacters)packet.Value;
+                        var characters = (RequestCharacters)packet;
 
                         var characterSelection = FindObjectOfType<CharacterSelection>();
                         foreach (var requestCharacter in characters.Characters) {
@@ -219,21 +215,21 @@ public class NetworkManager : MonoBehaviour {
                         characterSelection.Populate(characters.Characters);
                         break;
                     case PacketHeader.CreateCharacterRespons:
-                        var characterCreationRespons = (CreateCharacterRespons)packet.Value;
+                        var characterCreationRespons = (CreateCharacterRespons)packet;
 
                         CharacterCreation cr = FindObjectOfType<CharacterCreation>();
                         cr.HandleCreationRespons(characterCreationRespons);
                         break;
                     case PacketHeader.FullCharacterUpdate:
                         // the server forces all this information to be updated
-                        var fullCharacterUpdate = (FullCharacterUpdate)packet.Value;
+                        var fullCharacterUpdate = (FullCharacterUpdate)packet;
                         // move to the correct zone
                         var asyncOperation = SceneManager.LoadSceneAsync("map" + fullCharacterUpdate.NewCharacter.MapId);
                         CurrentMapId = fullCharacterUpdate.NewCharacter.MapId;
                         StartCoroutine(LoadMap(asyncOperation, fullCharacterUpdate));
                         break;
                     case PacketHeader.CharactersInMap:
-                        var characersInMap = (CharactersInMap)packet.Value;
+                        var characersInMap = (CharactersInMap)packet;
                         foreach (var character in characersInMap.Characters) {
                             if (character.SocketId != SocketId) {
                                 var proxy = Instantiate(ProxyCharacter);
@@ -244,9 +240,13 @@ public class NetworkManager : MonoBehaviour {
 
                         break;
                     case PacketHeader.NotifyOtherPlayerMapChange:
-                        var notifyOtherPlayerMapChange = (NotifyOtherPlayerMapChange)packet.Value;
+                        var notifyOtherPlayerMapChange = (NotifyOtherPlayerMapChange)packet;
 
                         Debug.Log("name: " + notifyOtherPlayerMapChange.Character.Name + " level: " + notifyOtherPlayerMapChange.Character.Level + " newMap: " + notifyOtherPlayerMapChange.Character.MapId);
+
+                        if (notifyOtherPlayerMapChange.SocketId == SocketId) {
+                            return; // this shouldnt happen. Investigate
+                        }
 
                         foreach (var netCharacter in GameObject.FindObjectsOfType<NetworkCharacter>()) {
                             if (netCharacter.socketId == notifyOtherPlayerMapChange.Character.SocketId) {

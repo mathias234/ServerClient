@@ -5,32 +5,27 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class Connected : INetworkPacket {
-        public int SocketId { get; }
-
+    public class Connected : BaseNetworkPacket, INetworkPacket<Connected> {
         public Connected() {
-            
+            SocketId = -1;
         }
 
         public Connected(int socketId) {
             SocketId = socketId;
         }
 
-        public string Serialize() {
-            return SocketId.ToString();
-        }
+        public Connected FromByteArray(byte[] byteArray) {
+            var br = new BinaryReader(new MemoryStream(byteArray));
 
-        public static Connected Deserialize(string newCharacter) {
-            return new Connected(int.Parse(newCharacter));
+            Header = (PacketHeader)br.ReadInt32();
+            SocketId = br.ReadInt32();
+
+            return this;
         }
 
         public byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.Connected);
-
-            var length = Marshal.SizeOf(SocketId);
-
-            bw.Write(length);
 
             bw.Write(SocketId);
 

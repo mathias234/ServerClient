@@ -5,17 +5,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class Movement : INetworkPacket {
-        public int SocketId;
+    public class Movement : BaseNetworkPacket, INetworkPacket<Movement> {
         public NetworkVector3 NewPosition;
-        public float YRotation { get; set;  }
+        public float YRotation { get; set; }
         public float Forward { get; set; }
         public float Turn { get; set; }
         public bool Crouch { get; set; }
         public bool OnGround { get; set; }
         public float Jump { get; set; }
         public float JumpLeg { get; set; }
-
 
         public int Size => Marshal.SizeOf(SocketId) + Marshal.SizeOf(NewPosition.X) * 3 + Marshal.SizeOf(YRotation) * 5 + Marshal.SizeOf(Crouch) * 2;
 
@@ -45,10 +43,6 @@ namespace Shared.Packets {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.Movement);
 
-            var length = Size; // not required
-
-            bw.Write(length);
-
             bw.Write(SocketId);
             bw.Write(NewPosition.X);
             bw.Write(NewPosition.Y);
@@ -66,6 +60,29 @@ namespace Shared.Packets {
             var data = ((MemoryStream)bw.BaseStream).ToArray();
 
             return data;
+        }
+
+        public Movement FromByteArray(byte[] byteArray) {
+            var br = new BinaryReader(new MemoryStream(byteArray));
+
+            Header = (PacketHeader)br.ReadInt32();
+            SocketId = br.ReadInt32();
+
+            NewPosition = new NetworkVector3() {
+                X = br.ReadSingle(),
+                Y = br.ReadSingle(),
+                Z = br.ReadSingle()
+            };
+
+            YRotation = br.ReadSingle();
+            Forward = br.ReadSingle();
+            Turn = br.ReadSingle();
+            Crouch = br.ReadBoolean();
+            OnGround = br.ReadBoolean();
+            Jump = br.ReadSingle();
+            JumpLeg = br.ReadSingle();
+
+            return this;
         }
     }
 }

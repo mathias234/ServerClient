@@ -6,29 +6,45 @@ using System.Text;
 using Shared.Packets;
 
 namespace Shared {
-    public class CharactersInMap : INetworkPacket {
-        public int SocketId { get; }
+    public class CharactersInMap : BaseNetworkPacket, INetworkPacket<CharactersInMap> {
         public List<Character> Characters;
+
+        public CharactersInMap() {
+            SocketId = -1;
+            Characters = null;
+        }
 
         public CharactersInMap(int socketId, List<Character> characters) {
             SocketId = socketId;
             Characters = characters;
         }
 
+        public CharactersInMap FromByteArray(byte[] byteArray) {
+            var br = new BinaryReader(new MemoryStream(byteArray));
+            Header = (PacketHeader)br.ReadInt32();
+            SocketId = br.ReadInt32();
+
+            var charactersCount = br.ReadInt32();
+            Characters = new List<Character>();
+
+            for (int i = 0; i < charactersCount; i++) {
+                Characters.Add(new Character(br));
+            }
+
+            return this;
+        }
+
         public byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.CharactersInMap);
 
-            var length = Characters.Count;
-
-            bw.Write(length);
-
             bw.Write(SocketId);
+
+            bw.Write(Characters.Count);
 
             foreach (var character in Characters) {
                 bw.Write(character.ToByteArray());
             }
-
 
             var data = ((MemoryStream)bw.BaseStream).ToArray();
             return data;

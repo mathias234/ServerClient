@@ -5,8 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class ChangeMap : INetworkPacket {
-        public int SocketId;
+    public class ChangeMap : BaseNetworkPacket, INetworkPacket<ChangeMap> {
         public int OldMapId;
         public int NewMapId;
         public float NewX;
@@ -31,13 +30,23 @@ namespace Shared.Packets {
             NewZ = newZ;
         }
 
+        public ChangeMap FromByteArray(byte[] byteArray) {
+            var br = new BinaryReader(new MemoryStream(byteArray));
+
+            Header = (PacketHeader)br.ReadInt32();
+            SocketId = br.ReadInt32();
+            OldMapId = br.ReadInt32();
+            NewMapId = br.ReadInt32();
+            NewX = br.ReadSingle();
+            NewY = br.ReadSingle();
+            NewZ = br.ReadSingle();
+
+            return this;
+        }
+
         public byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.ChangeMap);
-
-            var length = Marshal.SizeOf(SocketId) * 3; // not required
-
-            bw.Write(length);
 
             bw.Write(SocketId);
             bw.Write(OldMapId);

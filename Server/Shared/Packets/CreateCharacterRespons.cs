@@ -4,16 +4,14 @@ using System.IO;
 using System.Text;
 
 namespace Shared.Packets {
-    public class CreateCharacterRespons : INetworkPacket {
+    public class CreateCharacterRespons : BaseNetworkPacket, INetworkPacket<CreateCharacterRespons> {
         public enum CreateCharacterResponses {
             Success,
             NameAlreadyUsed,
             Failed
         }
-
-        public int SocketId;
+        
         public CreateCharacterResponses Respons;
-        public int Size => 0;
 
         public CreateCharacterRespons() {
             SocketId = -1;
@@ -25,13 +23,19 @@ namespace Shared.Packets {
             Respons = respons;
         }
 
+        public CreateCharacterRespons FromByteArray(byte[] byteArray) {
+            var br = new BinaryReader(new MemoryStream(byteArray));
+
+            Header = (PacketHeader)br.ReadInt32();
+            SocketId = br.ReadInt32();
+            Respons = (CreateCharacterResponses)br.ReadInt32();
+
+            return this;
+        }
+
         public byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.CreateCharacterRespons);
-
-            var length = Size; // not required
-
-            bw.Write(length);
 
             bw.Write(SocketId);
 
