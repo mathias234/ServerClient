@@ -190,6 +190,7 @@ namespace Server {
                         else
                             return false;
                     });
+
                     var charactersInMap = new List<Character>();
 
                     foreach (var account in accountsInMap) {
@@ -198,7 +199,6 @@ namespace Server {
                     }
 
                     Server.SendData(socketId, new CharactersInMap(socketId, charactersInMap).ToByteArray());
-                    Server.GetAccountFromSocketId(socketId).CharacterOnline.MapId = connectedToMap.MapId;
 
                     foreach (var account in Server.GetAllAccounts()) {
                         Server.SendData(Server.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, -1, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());

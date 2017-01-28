@@ -139,6 +139,9 @@ public class NetworkManager : MonoBehaviour {
             Dispatcher.Current.BeginInvoke(() => {
                 GameObject.FindGameObjectWithTag("Player");
 
+                if (packet == null)
+                    return;
+
                 switch (packet.Header) {
                     case PacketHeader.Movement:
                         var movement = (Movement)packet;
@@ -232,6 +235,8 @@ public class NetworkManager : MonoBehaviour {
                         var characersInMap = (CharactersInMap)packet;
                         foreach (var character in characersInMap.Characters) {
                             if (character.SocketId != SocketId) {
+                                Debug.Log("name: " + character.Name + " level: " + character.Level + " newMap: " + character.MapId);
+
                                 var proxy = Instantiate(ProxyCharacter);
                                 proxy.transform.position = new Vector3(character.X, character.Y, character.Z);
                                 proxy.GetComponent<NetworkCharacter>().socketId = character.SocketId;
@@ -242,7 +247,7 @@ public class NetworkManager : MonoBehaviour {
                     case PacketHeader.NotifyOtherPlayerMapChange:
                         var notifyOtherPlayerMapChange = (NotifyOtherPlayerMapChange)packet;
 
-                        Debug.Log("name: " + notifyOtherPlayerMapChange.Character.Name + " level: " + notifyOtherPlayerMapChange.Character.Level + " newMap: " + notifyOtherPlayerMapChange.Character.MapId);
+                        //Debug.Log("name: " + notifyOtherPlayerMapChange.Character.Name + " level: " + notifyOtherPlayerMapChange.Character.Level + " newMap: " + notifyOtherPlayerMapChange.Character.MapId);
 
                         if (notifyOtherPlayerMapChange.SocketId == SocketId) {
                             return; // this shouldnt happen. Investigate
