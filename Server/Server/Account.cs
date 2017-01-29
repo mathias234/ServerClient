@@ -13,16 +13,18 @@ namespace Server {
         public string Username;
         public string Password;
         public Character CharacterOnline;
+        public bool IsOnline;
 
         public Account() {
             
         }
 
-        public Account(int accountId, string username, string password, Socket socket) {
+        public Account(int accountId, string username, string password, Socket socket, bool isOnline) {
             AccountId = accountId;
             Username = username;
             Password = password;
             Socket = socket;
+            IsOnline = isOnline;
         }
     }
 }

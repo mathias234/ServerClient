@@ -41,7 +41,7 @@ namespace Server {
                     } else {
                         while (reader.Read()) {
                             accounts.Add(new Account((int)reader["id"], (string)reader["username"],
-                                (string)reader["password"] + "", null));
+                                (string)reader["password"] + "", null, ((int)reader["isOnline"]) == 1 ? true : false));
                         }
                         reader.Close();
                     }
@@ -51,10 +51,18 @@ namespace Server {
 
                     foreach (var account in accounts) {
                         if (account.Username == login.Username && login.Password == account.Password) {
-                            Server.UpdateAccountId(socketId, account);
-                            Server.SendData(socketId,
-                                new AuthenticationRespons(socketId,
-                                    AuthenticationRespons.AuthenticationResponses.Success).ToByteArray());
+                            if (!account.IsOnline) {
+                                Server.UpdateAccountId(socketId, account);
+                                Server.SendData(socketId,
+                                    new AuthenticationRespons(socketId,
+                                        AuthenticationRespons.AuthenticationResponses.Success).ToByteArray());
+                                return 1;
+                            } else {
+                                Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.AlreadyLoggedIn).ToByteArray());
+                                return 1;
+                            }
+                        } else {
+                            Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.WrongUsernameAndPassword).ToByteArray());
                             return 1;
                         }
                     }
@@ -72,7 +80,7 @@ namespace Server {
                     } else {
                         while (reader.Read()) {
                             accounts.Add(new Account((int)reader["id"], (string)reader["username"],
-                                (string)reader["password"] + "", null));
+                                (string)reader["password"] + "", null, ((int)reader["isOnline"]) == 1 ? true : false));
                         }
                         reader.Close();
                     }

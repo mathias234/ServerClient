@@ -15,6 +15,6 @@ public class GetLoginStatus : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	    _text.text = _networkManager.CurrentLoginStatus.ToString();
+	    _text.text = _networkManager.CurrentLoginText;
 	}
 }

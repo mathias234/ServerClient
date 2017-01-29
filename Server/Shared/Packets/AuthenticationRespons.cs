@@ -7,7 +7,8 @@ namespace Shared.Packets {
     public class AuthenticationRespons : BaseNetworkPacket, INetworkPacket<AuthenticationRespons> {
         public enum AuthenticationResponses {
             Success,
-            LoggedIn,
+            AlreadyLoggedIn,
+            WrongUsernameAndPassword,
             Failed
         }
 

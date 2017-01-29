@@ -62,7 +62,7 @@ namespace Server {
         private static void AcceptCallback(IAsyncResult result) {
             var socket = _serverSocket.EndAccept(result);
 
-            _clientSockets.Add(LastKey, /* a temporary account */ new Account(-1, "", "", socket));
+            _clientSockets.Add(LastKey, /* a temporary account */ new Account(-1, "", "", socket, true));
 
             Log.Debug("Client Connected");
 
@@ -159,6 +159,7 @@ namespace Server {
             _clientSockets[socketId].Username = newAccount.Username;
             _clientSockets[socketId].Password = newAccount.Password;
             _clientSockets[socketId].CharacterOnline = newAccount.CharacterOnline;
+            _clientSockets[socketId].IsOnline = newAccount.IsOnline;
         }
 
         public static Account GetAccountFromSocketId(int socketId) {

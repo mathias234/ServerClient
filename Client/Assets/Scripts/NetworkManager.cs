@@ -49,6 +49,7 @@ public class NetworkManager : MonoBehaviour {
     }
 
     public LoginStatus CurrentLoginStatus = LoginStatus.Idle;
+    public string CurrentLoginText = "";
 
     public void ConnectToServer() {
         _clientSocket.Connect(IPAddress.Parse(IpAdress), 3003);
@@ -57,6 +58,7 @@ public class NetworkManager : MonoBehaviour {
 
     public void AttemptLogin() {
         CurrentLoginStatus = LoginStatus.Connecting;
+        CurrentLoginText = "Connecting";
 
         try {
             if (!_clientSocket.Connected)
@@ -70,6 +72,7 @@ public class NetworkManager : MonoBehaviour {
         } catch (SocketException ex) {
             Debug.LogError(ex.Message);
             CurrentLoginStatus = LoginStatus.FailedToConnect;
+            CurrentLoginText = "Failed to Connect";
         }
     }
 
@@ -78,6 +81,7 @@ public class NetworkManager : MonoBehaviour {
             ConnectToServer();
 
         CurrentLoginStatus = LoginStatus.Registering;
+        CurrentLoginText = "Registering";
 
         var buffer = new AccountRegister(SocketId, Username.GetComponent<InputField>().text, Encrypt(Username.GetComponent<InputField>().text + ":" + Password.GetComponent<InputField>().text)).ToByteArray();
 
@@ -185,9 +189,11 @@ public class NetworkManager : MonoBehaviour {
                         switch (regRespons.Respons) {
                             case RegisterRespons.RegisterResponses.Success:
                                 CurrentLoginStatus = LoginStatus.RegisteringSuccessful;
+                                CurrentLoginText = "Registering Successful";
                                 break;
                             case RegisterRespons.RegisterResponses.UsernameAlreadyInUse:
                                 CurrentLoginStatus = LoginStatus.UsernameAlreadyInUse;
+                                CurrentLoginText = "Username Already In Use";
                                 break;
                             case RegisterRespons.RegisterResponses.Failed:
                                 Debug.LogError("Failed to register unknown reason");
@@ -198,11 +204,23 @@ public class NetworkManager : MonoBehaviour {
                     case PacketHeader.AuthenticationRespons:
                         var respons = (AuthenticationRespons)packet;
 
-                        if (respons.Respons == AuthenticationRespons.AuthenticationResponses.Success) {
-                            CurrentLoginStatus = LoginStatus.Connected;
-                            RequestCharacters();
-                        } else {
-                            CurrentLoginStatus = LoginStatus.FailedToConnect;
+                        switch (respons.Respons) {
+                            case AuthenticationRespons.AuthenticationResponses.Success:
+                                CurrentLoginStatus = LoginStatus.Connected;
+                                CurrentLoginText = "Logged In";
+                                RequestCharacters();
+                                break;
+                            case AuthenticationRespons.AuthenticationResponses.AlreadyLoggedIn:
+                                CurrentLoginText = "Already Logged In";
+                                break;
+                            case AuthenticationRespons.AuthenticationResponses.WrongUsernameAndPassword:
+                                CurrentLoginStatus = LoginStatus.FailedToConnect;
+                                CurrentLoginText = "Wrong Username or Password";
+                                break;
+                            case AuthenticationRespons.AuthenticationResponses.Failed:
+                                CurrentLoginStatus = LoginStatus.FailedToConnect;
+                                CurrentLoginText = "Failed to login unknown reason";
+                                break;
                         }
 
                         Debug.Log("Recieved authentication respons: " + respons.Respons.ToString());
@@ -313,6 +331,7 @@ public class NetworkManager : MonoBehaviour {
 
     private void Authenticate() {
         CurrentLoginStatus = LoginStatus.Authenticating;
+        CurrentLoginText = "Authenticating";
 
         var encryptedPassword = Encrypt(Username.GetComponent<InputField>().text + ":" + Password.GetComponent<InputField>().text);
 
