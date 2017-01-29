@@ -26,6 +26,7 @@ namespace Server {
             MainDb = new Database("localhost", "main", "root", "root");
             SetupServer(3003);
 
+            CleanUpCrash();
 
             while (true) {
                 var consoleInput = Console.ReadLine();
@@ -40,6 +41,12 @@ namespace Server {
                 }
             }
         }
+
+        // run this on start in case the server crashed last run
+        public static void CleanUpCrash() {
+            MainDb.Run("UPDATE accounts SET isOnline='0'");
+        }
+
         private static void Save() {
             foreach (var accounts in _clientSockets) {
                 Log.Debug("Saving");
