@@ -15,6 +15,8 @@ namespace Server {
         }
 
         public void SaveToDb() {
+            if (Character == null) { return; }
+
             var query = string.Format("UPDATE characters SET characterName='{1}', characterLevel={2}, characterClass={3}, mapId={4}, x={5}, y={6}, z={7} WHERE id={0};",
                 Character.CharacterId,
                 Character.Name,

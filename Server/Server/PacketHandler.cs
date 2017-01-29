@@ -52,10 +52,15 @@ namespace Server {
                     foreach (var account in accounts) {
                         if (account.Username == login.Username && login.Password == account.Password) {
                             if (!account.IsOnline) {
+                                account.IsOnline = true;
                                 Server.UpdateAccountId(socketId, account);
                                 Server.SendData(socketId,
                                     new AuthenticationRespons(socketId,
                                         AuthenticationRespons.AuthenticationResponses.Success).ToByteArray());
+
+                                DbAccount dbAccount = new DbAccount(account);
+                                dbAccount.SaveToDb();
+
                                 return 1;
                             } else {
                                 Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.AlreadyLoggedIn).ToByteArray());

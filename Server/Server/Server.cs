@@ -108,6 +108,12 @@ namespace Server {
                 new DbCharacter(_clientSockets[socketId].CharacterOnline).SaveToDb();
                 SendCharacterDisconnect(socketId);
                 _clientSockets[socketId].Socket.Shutdown(SocketShutdown.Both);
+
+                _clientSockets[socketId].IsOnline = false;
+
+                DbAccount dbAccount = new DbAccount(_clientSockets[socketId]);
+                dbAccount.SaveToDb();
+
                 _clientSockets.Remove(socketId);
             }
         }
