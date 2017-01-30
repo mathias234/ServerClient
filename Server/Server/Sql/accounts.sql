@@ -12,17 +12,21 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
 -- Dumping structure for table main.accounts
-DROP TABLE IF EXISTS `accounts`;
 CREATE TABLE IF NOT EXISTS `accounts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` text NOT NULL,
   `password` text NOT NULL,
-  `inGame` int(11) DEFAULT NULL,
+  `isOnline` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
--- Data exporting was unselected.
+-- Dumping data for table main.accounts: ~1 rows (approximately)
+/*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
+REPLACE INTO `accounts` (`id`, `username`, `password`, `isOnline`) VALUES
+	(1, 'admin', '?Y???F8?Oc???S?b??', 0);
+/*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
+
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
