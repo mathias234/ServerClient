@@ -8,7 +8,8 @@ using System.Linq;
 
 namespace Server {
     public class Server {
-        private static byte[] _buffer = new byte[1024];
+        private static int maxBufferSize = 1024;
+        private static byte[] _buffer = new byte[maxBufferSize];
 
         private static Dictionary<int, Account> _clientSockets = new Dictionary<int, Account>();
 
@@ -20,26 +21,13 @@ namespace Server {
 
         public static int timeSinceLastSave;
 
-        public static void Main(string[] args) {
-            Console.Title = "MMO Server";
+        public static void Start() {
             Log.Debug("Opening a DB connection");
             MainDb = new Database("localhost", "main", "root", "root");
+            _clientSockets = new Dictionary<int, Account>();
             SetupServer(3003);
 
             CleanUpCrash();
-
-            while (true) {
-                var consoleInput = Console.ReadLine();
-                if (consoleInput == null) continue;
-                switch (consoleInput.ToLower()) {
-                    case "stop":
-                        MainDb.CloseConnection();
-                        return;
-                    case "save":
-                        Save();
-                        break;
-                }
-            }
         }
 
         // run this on start in case the server crashed last run

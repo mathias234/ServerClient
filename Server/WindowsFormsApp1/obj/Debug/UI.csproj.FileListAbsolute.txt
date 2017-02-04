@@ -1,0 +1,14 @@
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\UI.csprojResolveAssemblyReference.cache
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.Properties.Resources.resources
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\UI.csproj.GenerateResource.Cache
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe.config
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.pdb
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\bin\Debug\MMOServer.dll
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\bin\Debug\Shared.dll
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\bin\Debug\MySql.Data.dll
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\bin\Debug\MMOServer.pdb
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\bin\Debug\Shared.pdb
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.Form1.resources
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.exe
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.pdb
