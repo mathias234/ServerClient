@@ -45,6 +45,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccountViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AccountViewer.Designer.cs">
+      <DependentUpon>AccountViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RichTextBoxExtension.cs" />
     <Compile Include="ServerUI.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -53,6 +60,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AccountViewer.resx">
+      <DependentUpon>AccountViewer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ServerUI.resx">
       <DependentUpon>ServerUI.cs</DependentUpon>
     </EmbeddedResource>

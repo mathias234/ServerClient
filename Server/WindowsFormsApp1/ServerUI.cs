@@ -52,11 +52,39 @@ namespace ServerUI {
                 if (!PlayersOnline.Items.Contains(account.Username))
                     PlayersOnline.Items.Add(account.Username);
             }
+
+            UpdateLog();
+        }
+
+        private void UpdateLog() {
+            OutputField.Text = "";
+
+            foreach (LogMessage message in Log.GetLog()) {
+                switch (message.Type) {
+                    case LogType.Debug:
+                        OutputField.AppendText(message.Message, Color.DimGray, true);
+                        break;
+                    case LogType.Warning:
+                        OutputField.AppendText(message.Message, Color.Yellow, true);
+                        break;
+                    case LogType.Error:
+                        OutputField.AppendText(message.Message, Color.Red, true);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         private void Button1_Click(object sender, EventArgs e) {
             var accountName = (string)PlayersOnline.SelectedItem;
             var account = Server.Server.GetAllAccounts().First(acc => acc.Username == accountName);
+
+            if (account == null)
+                return;
+
+            AccountEditor ae = new AccountEditor(account);
+            ae.Show();
         }
     }
 }

@@ -12,3 +12,4 @@ C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug
 C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.exe
 C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.pdb
 C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\ServerUI.Form1.resources
+C:\Users\matha\OneDrive\Documents\ServerClient\Server\WindowsFormsApp1\obj\Debug\ServerUI.AccountEditor.resources
