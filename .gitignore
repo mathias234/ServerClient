@@ -16,6 +16,9 @@
 /Server/Server/obj
 /Server/Server/bin
 
+/Server/ServerUI/obj
+/Server/ServerUI/bin
+
 /Server/Shared/obj
 /Server/Shared/bin
 
