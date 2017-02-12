@@ -30,6 +30,7 @@
             this.Timer1 = new System.Windows.Forms.Timer(this.components);
             this.button1 = new System.Windows.Forms.Button();
             this.OutputField = new System.Windows.Forms.RichTextBox();
+            this.SaveTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // StartServer
@@ -82,6 +83,11 @@
             this.OutputField.TabIndex = 4;
             this.OutputField.Text = "";
             // 
+            // SaveTimer
+            // 
+            this.SaveTimer.Interval = 50000;
+            this.SaveTimer.Tick += new System.EventHandler(this.SaveTimer_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -110,6 +116,7 @@
         private System.Windows.Forms.Timer Timer1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.RichTextBox OutputField;
+        private System.Windows.Forms.Timer SaveTimer;
     }
 }
 

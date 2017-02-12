@@ -36,6 +36,12 @@ namespace Server {
             }
         }
 
+        /// <summary>
+        /// TODO: make thread safe (there can only be one MySqlDataReader at once, maybe make a wrapper class so you can close it fast)
+        /// </summary>
+        /// <param name="sqlString"></param>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         public bool Run(string sqlString, out MySqlDataReader reader) {
             try {
                 var cmd = new MySqlCommand(sqlString, _connection);

@@ -23,11 +23,11 @@ namespace Server {
                 Account.Password,
                 Account.IsOnline == true ? 1 : 0);
 
-            Server.MainDb.Run(query);
+            MainServer.MainDb.Run(query);
         }
 
         public static Account GetFromDb(int accountId) {
-            if (!Server.MainDb.Run(string.Format("SELECT * FROM account where id={0}", accountId), out var reader)) {
+            if (!MainServer.MainDb.Run(string.Format("SELECT * FROM account where id={0}", accountId), out var reader)) {
                 Log.Debug("Failed to find characters");
             } else {
                 while (reader.Read()) {

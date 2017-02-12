@@ -22,6 +22,7 @@ namespace Shared.Packets {
             var br = new BinaryReader(new MemoryStream(byteArray));
 
             Header = (PacketHeader)br.ReadInt32();
+            SocketId = br.ReadInt32();
             MapId = br.ReadInt32();
 
             return this;

@@ -27,11 +27,11 @@ namespace Server {
                 Character.Y,
                 Character.Z);
 
-            Server.MainDb.Run(query);
+            MainServer.MainDb.Run(query);
         }
 
         public static Character GetFromDb(int charId) {
-            if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where id={0}", charId), out var reader)) {
+            if (!MainServer.MainDb.Run(string.Format("SELECT * FROM characters where id={0}", charId), out var reader)) {
                 Log.Debug("Failed to find characters");
             } else {
                 while (reader.Read()) {

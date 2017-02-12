@@ -17,16 +17,16 @@ namespace Server {
                 case PacketHeader.Movement:
                     var movement = (Movement)packet;
 
-                    var tempCharacter = Server.GetAccountFromSocketId(movement.SocketId).CharacterOnline;
+                    var tempCharacter = MainServer.GetAccountFromSocketId(movement.SocketId).CharacterOnline;
 
                     tempCharacter.X = movement.NewPosition.X;
                     tempCharacter.Y = movement.NewPosition.Y;
                     tempCharacter.Z = movement.NewPosition.Z;
 
-                    Server.GetAccountFromSocketId(movement.SocketId).CharacterOnline = tempCharacter;
+                    MainServer.GetAccountFromSocketId(movement.SocketId).CharacterOnline = tempCharacter;
 
                     // send this new position to all players
-                    Server.SendMovement(movement.SocketId, movement.NewPosition, movement.YRotation, movement.Forward,
+                    MainServer.SendMovement(movement.SocketId, movement.NewPosition, movement.YRotation, movement.Forward,
                         movement.Turn, movement.Crouch, movement.OnGround, movement.Jump, movement.JumpLeg);
                     break;
                 case PacketHeader.Login:
@@ -36,7 +36,7 @@ namespace Server {
 
                     var accounts = new List<Account>();
 
-                    if (!Server.MainDb.Run("SELECT * FROM accounts", out reader)) {
+                    if (!MainServer.MainDb.Run("SELECT * FROM accounts", out reader)) {
                         Log.Error("Failed to find accounts");
                     } else {
                         while (reader.Read()) {
@@ -53,8 +53,8 @@ namespace Server {
                         if (account.Username == login.Username && login.Password == account.Password) {
                             if (!account.IsOnline) {
                                 account.IsOnline = true;
-                                Server.UpdateAccountId(socketId, account);
-                                Server.SendData(socketId,
+                                MainServer.UpdateAccountId(socketId, account);
+                                MainServer.SendData(socketId,
                                     new AuthenticationRespons(socketId,
                                         AuthenticationRespons.AuthenticationResponses.Success).ToByteArray());
 
@@ -63,16 +63,16 @@ namespace Server {
 
                                 return 1;
                             } else {
-                                Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.AlreadyLoggedIn).ToByteArray());
+                                MainServer.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.AlreadyLoggedIn).ToByteArray());
                                 return 1;
                             }
                         } else {
-                            Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.WrongUsernameAndPassword).ToByteArray());
+                            MainServer.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.WrongUsernameAndPassword).ToByteArray());
                             return 1;
                         }
                     }
 
-                    Server.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed).ToByteArray());
+                    MainServer.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed).ToByteArray());
 
                     break;
                 case PacketHeader.AccountRegister:
@@ -80,7 +80,7 @@ namespace Server {
 
                     accounts = new List<Account>();
 
-                    if (!Server.MainDb.Run("SELECT * FROM accounts", out reader)) {
+                    if (!MainServer.MainDb.Run("SELECT * FROM accounts", out reader)) {
                         Log.Error("Failed to find accounts");
                     } else {
                         while (reader.Read()) {
@@ -91,7 +91,7 @@ namespace Server {
                     }
 
                     if (accounts.Any(account => account.Username == register.Username)) {
-                        Server.SendData(socketId,
+                        MainServer.SendData(socketId,
                             new RegisterRespons(socketId, RegisterRespons.RegisterResponses.UsernameAlreadyInUse).ToByteArray());
                         return 0;
                     }
@@ -99,16 +99,16 @@ namespace Server {
                     // fix for probleme where mysql breaks if a password contains '
                     register.Password = register.Password.Replace('\'', '3');
 
-                    if (Server.MainDb.Run("INSERT INTO `accounts` (`username`, `password`) VALUES " +
+                    if (MainServer.MainDb.Run("INSERT INTO `accounts` (`username`, `password`) VALUES " +
                                           "('" + register.Username + "', '" + register.Password + "');")) {
-                        Server.SendData(socketId, new RegisterRespons(socketId, RegisterRespons.RegisterResponses.Success).ToByteArray());
+                        MainServer.SendData(socketId, new RegisterRespons(socketId, RegisterRespons.RegisterResponses.Success).ToByteArray());
                     }
                     break;
                 case PacketHeader.RequestCharacters:
                     var characters = new List<Character>();
 
-                    if (!Server.MainDb.Run(string.Format("SELECT * FROM characters where accountId={0};",
-                        Server.GetAccountFromSocketId(socketId).AccountId), out reader)) {
+                    if (!MainServer.MainDb.Run(string.Format("SELECT * FROM characters where accountId={0};",
+                        MainServer.GetAccountFromSocketId(socketId).AccountId), out reader)) {
                         Log.Debug("Failed to find characters");
                     } else {
                         while (reader.Read()) {
@@ -126,7 +126,7 @@ namespace Server {
                         reader.Close();
                     }
 
-                    Server.SendData(socketId, new RequestCharacters(socketId, characters).ToByteArray());
+                    MainServer.SendData(socketId, new RequestCharacters(socketId, characters).ToByteArray());
                     break;
                 case PacketHeader.CreateCharacter:
                     var createCharacter = (CreateCharacter)packet;
@@ -135,7 +135,7 @@ namespace Server {
                     characters = new List<Character>();
 
                     // TODO: Cache this
-                    if (!Server.MainDb.Run("SELECT * FROM characters", out reader)) {
+                    if (!MainServer.MainDb.Run("SELECT * FROM characters", out reader)) {
                         Log.Debug("Failed to find characters");
                     } else {
                         while (reader.Read()) {
@@ -154,13 +154,13 @@ namespace Server {
                     }
 
                     if (characters.Any(character => character.Name == createCharacter.Name)) {
-                        Server.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.NameAlreadyUsed).ToByteArray());
+                        MainServer.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.NameAlreadyUsed).ToByteArray());
                         return 0;
                     }
 
                     var createCharacterSql = string.Format(
                     "INSERT INTO characters (accountId, characterName, characterLevel, characterClass, mapId, x, y, z) VALUES ({0}, '{1}', 1, {2}, {3}, {4}, {5}, {6});",
-                    Server.GetAccountFromSocketId(createCharacter.SocketId).AccountId,
+                    MainServer.GetAccountFromSocketId(createCharacter.SocketId).AccountId,
                     createCharacter.Name,
                     (int)createCharacter.CharClass,
                     // This data is where the player will start. TODO: Remove hardcoding
@@ -169,11 +169,11 @@ namespace Server {
                     23.82,
                     10.7);
 
-                    if (Server.MainDb.Run(createCharacterSql)) {
+                    if (MainServer.MainDb.Run(createCharacterSql)) {
                         Log.Debug("successfully created character");
-                        Server.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.Success).ToByteArray());
+                        MainServer.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.Success).ToByteArray());
                     } else {
-                        Server.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.Failed).ToByteArray());
+                        MainServer.SendData(socketId, new CreateCharacterRespons(socketId, CreateCharacterRespons.CreateCharacterResponses.Failed).ToByteArray());
                     }
                     break;
                 case PacketHeader.FullCharacterUpdate:
@@ -184,17 +184,17 @@ namespace Server {
                     var dbCharacter = DbCharacter.GetFromDb(fullCharacterUpdate.NewCharacter.CharacterId);
                     dbCharacter.SocketId = socketId;
 
-                    Server.GetAccountFromSocketId(socketId).CharacterOnline = dbCharacter;
+                    MainServer.GetAccountFromSocketId(socketId).CharacterOnline = dbCharacter;
 
                     dataToSend = new FullCharacterUpdate(socketId, dbCharacter);
-                    Server.SendData(socketId, dataToSend.ToByteArray());
+                    MainServer.SendData(socketId, dataToSend.ToByteArray());
 
                     break;
                 case PacketHeader.ConnectedToMap:
                     var connectedToMap = (ConnectedToMap)packet;
 
                     // Send all players online
-                    var accountsInMap = Server.GetAllAccounts().FindAll(account => {
+                    var accountsInMap = MainServer.GetAllAccounts().FindAll(account => {
                         if (account.CharacterOnline != null)
                             if (account.CharacterOnline.MapId == connectedToMap.MapId)
                                 return true;
@@ -211,28 +211,30 @@ namespace Server {
                             charactersInMap.Add(account.CharacterOnline);
                     }
 
-                    Server.SendData(socketId, new CharactersInMap(socketId, charactersInMap).ToByteArray());
+                    MainServer.SendData(socketId, new CharactersInMap(socketId, charactersInMap).ToByteArray());
 
-                    foreach (var account in Server.GetAllAccounts()) {
-                        Server.SendData(Server.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, -1, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
+                    foreach (var account in MainServer.GetAllAccounts()) {
+                        MainServer.SendData(MainServer.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, -1, MainServer.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
                     }
+
+                    Callback.CallPlayerEnteredMap(socketId, connectedToMap.MapId);
 
                     break;
                 case PacketHeader.ChangeMap:
                     var changeMap = (ChangeMap)packet;
 
-                    Server.GetAccountFromSocketId(socketId).CharacterOnline.MapId = changeMap.NewMapId;
-                    Server.GetAccountFromSocketId(socketId).CharacterOnline.X = changeMap.NewX;
-                    Server.GetAccountFromSocketId(socketId).CharacterOnline.Y = changeMap.NewY;
-                    Server.GetAccountFromSocketId(socketId).CharacterOnline.Z = changeMap.NewZ;
+                    MainServer.GetAccountFromSocketId(socketId).CharacterOnline.MapId = changeMap.NewMapId;
+                    MainServer.GetAccountFromSocketId(socketId).CharacterOnline.X = changeMap.NewX;
+                    MainServer.GetAccountFromSocketId(socketId).CharacterOnline.Y = changeMap.NewY;
+                    MainServer.GetAccountFromSocketId(socketId).CharacterOnline.Z = changeMap.NewZ;
 
-                    DbCharacter dbChar = new DbCharacter(Server.GetAccountFromSocketId(socketId).CharacterOnline);
+                    DbCharacter dbChar = new DbCharacter(MainServer.GetAccountFromSocketId(socketId).CharacterOnline);
                     dbChar.SaveToDb();
 
-                    Server.SendData(socketId, new FullCharacterUpdate(socketId, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
+                    MainServer.SendData(socketId, new FullCharacterUpdate(socketId, MainServer.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
 
-                    foreach (var account in Server.GetAllAccounts()) {
-                        Server.SendData(Server.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, changeMap.OldMapId, Server.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
+                    foreach (var account in MainServer.GetAllAccounts()) {
+                        MainServer.SendData(MainServer.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, changeMap.OldMapId, MainServer.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
                     }
 
                     break;

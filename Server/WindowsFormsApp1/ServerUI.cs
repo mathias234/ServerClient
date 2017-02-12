@@ -1,12 +1,7 @@
 ﻿using Server;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ServerUI {
@@ -22,7 +17,7 @@ namespace ServerUI {
 
         private void StartServer_Click(object sender, EventArgs e) {
             if (_serverStarted == false) {
-                Server.Server.Start();
+                MainServer.Start();
                 _serverStarted = true;
                 Timer1.Enabled = true;
             } else {
@@ -40,7 +35,7 @@ namespace ServerUI {
             // first remove old
             for (int i = 0; i < PlayersOnline.Items.Count; i++) {
                 var item = (string)PlayersOnline.Items[i];
-                var accounts = Server.Server.GetAllAccounts();
+                var accounts = MainServer.GetAllAccounts();
 
                 var account = item.Split('(')[0];
                 if (!accounts.Any(acc => acc.Username == account)) {
@@ -48,7 +43,7 @@ namespace ServerUI {
                 }
             }
 
-            foreach (Account account in Server.Server.GetAllAccounts()) {
+            foreach (Account account in Server.MainServer.GetAllAccounts()) {
                 if (!PlayersOnline.Items.Contains(account.Username))
                     PlayersOnline.Items.Add(account.Username);
             }
@@ -78,13 +73,17 @@ namespace ServerUI {
 
         private void Button1_Click(object sender, EventArgs e) {
             var accountName = (string)PlayersOnline.SelectedItem;
-            var account = Server.Server.GetAllAccounts().First(acc => acc.Username == accountName);
+            var account = MainServer.GetAllAccounts().First(acc => acc.Username == accountName);
 
             if (account == null)
                 return;
 
             AccountEditor ae = new AccountEditor(account);
             ae.Show();
+        }
+
+        private void SaveTimer_Tick(object sender, EventArgs e) {
+            MainServer.Save();
         }
     }
 }

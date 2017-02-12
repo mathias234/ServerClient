@@ -5,9 +5,12 @@ using System.Net.Sockets;
 using Shared;
 using Shared.Packets;
 using System.Linq;
+using System.Reflection;
+using Server.WorldHandlers;
+using System.Threading;
 
 namespace Server {
-    public class Server {
+    public class MainServer {
         private static int maxBufferSize = 1024;
         private static byte[] _buffer = new byte[maxBufferSize];
 
@@ -24,10 +27,27 @@ namespace Server {
         public static void Start() {
             Log.Debug("Opening a DB connection");
             MainDb = new Database("localhost", "main", "root", "root");
+
+            InitializeHandlers();
+
             _clientSockets = new Dictionary<int, Account>();
             SetupServer(3003);
 
             CleanUpCrash();
+
+        }
+
+        private static void InitializeHandlers() {
+            var baseType = typeof(WorldHandler);
+            var handlers = Assembly.GetAssembly(baseType).GetTypes().Where(t => t != baseType && baseType.IsAssignableFrom(t));
+
+            foreach (var handler in handlers) {
+                Log.Debug("Starting " + handler.Name.ToString());
+
+                WorldHandler initializedHandler = (WorldHandler)Activator.CreateInstance(handler);
+                initializedHandler.Start();
+                Log.Debug(handler.Name.ToString() + " Started");
+            }
         }
 
         // run this on start in case the server crashed last run
@@ -35,7 +55,7 @@ namespace Server {
             MainDb.Run("UPDATE accounts SET isOnline='0'");
         }
 
-        private static void Save() {
+        public static void Save() {
             foreach (var accounts in _clientSockets) {
                 Log.Debug("Saving");
                 var DbChar = new DbCharacter(accounts.Value.CharacterOnline);
