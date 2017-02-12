@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 
 namespace Server {
     public static class Log {
-        private static List<LogMessage> _logMessages = new List<LogMessage>();
+        public delegate void OnNewLogMessage(LogType type, string message);
+        public static event OnNewLogMessage NewLogMessage;
 
         public static void Debug(string message) {
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(message);
             Console.ResetColor();
 
-            _logMessages.Add(new LogMessage(LogType.Debug, message));
+            NewLogMessage?.Invoke(LogType.Debug, message);
         }
 
         public static void Warning(string message) {
@@ -21,7 +22,7 @@ namespace Server {
             Console.WriteLine(message);
             Console.ResetColor();
 
-            _logMessages.Add(new LogMessage(LogType.Warning, message));
+            NewLogMessage?.Invoke(LogType.Warning, message);
         }
 
         public static void Error(string message) {
@@ -29,11 +30,7 @@ namespace Server {
             Console.WriteLine(message);
             Console.ResetColor();
 
-            _logMessages.Add(new LogMessage(LogType.Error, message));
-        }
-
-        public static List<LogMessage> GetLog() {
-            return _logMessages;
+            NewLogMessage?.Invoke(LogType.Error, message);
         }
     }
 }

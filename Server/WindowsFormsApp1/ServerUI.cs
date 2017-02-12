@@ -16,15 +16,34 @@ namespace ServerUI {
         }
 
         private void StartServer_Click(object sender, EventArgs e) {
+            Log.NewLogMessage += Log_NewLogMessage;
+
             if (_serverStarted == false) {
                 MainServer.Start();
                 _serverStarted = true;
                 Timer1.Enabled = true;
             } else {
-                // TODO: implement server shutdown
+                Application.Exit();
             }
 
+
             UpdateStartServerText();
+        }
+
+        private void Log_NewLogMessage(LogType type, string message) {
+            switch (type) {
+                case LogType.Debug:
+                    OutputField.AppendText(message, Color.DimGray, true);
+                    break;
+                case LogType.Warning:
+                    OutputField.AppendText(message, Color.Yellow, true);
+                    break;
+                case LogType.Error:
+                    OutputField.AppendText(message, Color.Red, true);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void UpdateStartServerText() {
@@ -46,28 +65,6 @@ namespace ServerUI {
             foreach (Account account in Server.MainServer.GetAllAccounts()) {
                 if (!PlayersOnline.Items.Contains(account.Username))
                     PlayersOnline.Items.Add(account.Username);
-            }
-
-            UpdateLog();
-        }
-
-        private void UpdateLog() {
-            OutputField.Text = "";
-
-            foreach (LogMessage message in Log.GetLog()) {
-                switch (message.Type) {
-                    case LogType.Debug:
-                        OutputField.AppendText(message.Message, Color.DimGray, true);
-                        break;
-                    case LogType.Warning:
-                        OutputField.AppendText(message.Message, Color.Yellow, true);
-                        break;
-                    case LogType.Error:
-                        OutputField.AppendText(message.Message, Color.Red, true);
-                        break;
-                    default:
-                        break;
-                }
             }
         }
 
