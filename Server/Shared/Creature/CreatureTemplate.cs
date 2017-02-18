@@ -1,4 +1,4 @@
-﻿namespace Server.Creature {
+﻿namespace Shared.Creature {
     public class CreatureTemplate {
         public int TemplateId;
         public string Name;

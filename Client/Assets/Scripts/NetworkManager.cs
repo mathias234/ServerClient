@@ -36,6 +36,8 @@ public class NetworkManager : MonoBehaviour {
     public GameObject CharacterTemplate;
     public GameObject Character;
 
+    public GameObject CreaturePrefab;
+
 
     public enum LoginStatus {
         Idle,
@@ -291,6 +293,18 @@ public class NetworkManager : MonoBehaviour {
                                 proxy.GetComponent<NetworkCharacter>().socketId = notifyOtherPlayerMapChange.Character.SocketId;
                             }
                         }
+                        break;
+                    case PacketHeader.CreaturesInMap:
+                        var creaturesInMap = (CreaturesInMap)packet;
+
+                        Debug.Log("Creature in map");
+
+                        foreach (var creature in creaturesInMap.Creatures) {
+                            Debug.Log("Found Creature in this map with ID of" + creature.InstanceId);
+                            var creatureObj = Instantiate(CreaturePrefab);
+                            creatureObj.transform.position = new Vector3(creature.X, creature.Y, creature.Z);
+                        }
+
                         break;
                     default:
                         Debug.LogError("Unhandled packet received");

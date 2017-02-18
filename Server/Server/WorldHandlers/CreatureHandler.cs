@@ -1,5 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
-using Server.Creature;
+using Shared.Creature;
+using Shared.Packets;
 using System;
 using System.Collections.Generic;
 
@@ -15,14 +16,19 @@ namespace Server.WorldHandlers {
             Callback.PlayerEnteredMap += Callback_PlayerEnteredMap;
         }
 
-        private void Callback_PlayerEnteredMap(int playerId, int MapId) {
-            Log.Debug("player with id: " + playerId + " entered map" + MapId);
+        private void Callback_PlayerEnteredMap(int socketId, int MapId) {
+            List<InstancedCreature> creaturesInMap = GetCreaturesInMap(MapId);
+
+            if (creaturesInMap.Count == 0) {
+                Log.Warning("No Creatures in map: " + MapId);
+                return;
+            }
+
+            MainServer.SendData(socketId, new CreaturesInMap(socketId, creaturesInMap).ToByteArray());
         }
 
         private void LoadCreatureTemplatesFromDB() {
-            MySqlDataReader reader;
-
-            if (!MainServer.MainDb.Run("SELECT * FROM creaturetemplate", out reader)) {
+            if (!MainServer.MainDb.Run("SELECT * FROM creaturetemplate", out var reader)) {
                 Log.Error("Failed to find creature templates");
             } else {
                 while (reader.Read()) {
@@ -38,9 +44,7 @@ namespace Server.WorldHandlers {
         }
 
         private void GetSpawnedCreaturesFromDB() {
-            MySqlDataReader reader;
-
-            if (!MainServer.MainDb.Run("SELECT * FROM spawnedcreatures", out reader)) {
+            if (!MainServer.MainDb.Run("SELECT * FROM spawnedcreatures", out var reader)) {
                 Log.Error("Failed to find spawned creatures");
             } else {
                 while (reader.Read()) {
@@ -56,10 +60,17 @@ namespace Server.WorldHandlers {
             }
         }
 
-        public static List<InstancedCreature> GetCreaturesInMap(int mapId) {
+        public List<InstancedCreature> GetCreaturesInMap(int mapId) {
             var creatures = new List<InstancedCreature>();
 
-            foreach (var creature in ((CreatureHandler)instance)._spawnedCreatures) {
+            var spawnedCreatures = _spawnedCreatures;
+
+            if (spawnedCreatures == null) {
+                Log.Error("Failed to get creatures");
+                return creatures;
+            }
+
+            foreach (var creature in spawnedCreatures) {
                 if (creature.Value.MapId == mapId) {
                     creatures.Add(creature.Value);
                 }

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Shared.Packets;
 
-namespace Shared {
+namespace Shared.Packets {
     public class RequestCharacters : BaseNetworkPacket, INetworkPacket<RequestCharacters> {
         public List<Character> Characters;
 

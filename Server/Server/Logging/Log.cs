@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Server {
     public static class Log {
         public delegate void OnNewLogMessage(LogType type, string message);

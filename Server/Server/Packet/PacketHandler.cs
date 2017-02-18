@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
-using Shared;
 using Shared.Packets;
+using Shared;
 
 namespace Server {
     public class PacketHandler {

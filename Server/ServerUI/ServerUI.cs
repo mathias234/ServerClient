@@ -31,19 +31,21 @@ namespace ServerUI {
         }
 
         private void Log_NewLogMessage(LogType type, string message) {
-            switch (type) {
-                case LogType.Debug:
-                    OutputField.AppendText(message, Color.DimGray, true);
-                    break;
-                case LogType.Warning:
-                    OutputField.AppendText(message, Color.Yellow, true);
-                    break;
-                case LogType.Error:
-                    OutputField.AppendText(message, Color.Red, true);
-                    break;
-                default:
-                    break;
-            }
+            OutputField.Invoke(new MethodInvoker(delegate () {
+                switch (type) {
+                    case LogType.Debug:
+                        OutputField.AppendText(message, Color.DimGray, true);
+                        break;
+                    case LogType.Warning:
+                        OutputField.AppendText(message, Color.Yellow, true);
+                        break;
+                    case LogType.Error:
+                        OutputField.AppendText(message, Color.Red, true);
+                        break;
+                    default:
+                        break;
+                }
+            }));
         }
 
         public void UpdateStartServerText() {
@@ -62,7 +64,7 @@ namespace ServerUI {
                 }
             }
 
-            foreach (Account account in Server.MainServer.GetAllAccounts()) {
+            foreach (Account account in MainServer.GetAllAccounts()) {
                 if (!PlayersOnline.Items.Contains(account.Username))
                     PlayersOnline.Items.Add(account.Username);
             }

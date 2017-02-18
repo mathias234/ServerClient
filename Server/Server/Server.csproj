@@ -50,8 +50,6 @@
   <ItemGroup>
     <Compile Include="Account\Account.cs" />
     <Compile Include="Callbacks.cs" />
-    <Compile Include="Creature\CreatureTemplate.cs" />
-    <Compile Include="Creature\InstancedCreature.cs" />
     <Compile Include="WorldHandlers\CreatureHandler.cs" />
     <Compile Include="Database\Database.cs" />
     <Compile Include="Database\DbAccount.cs" />

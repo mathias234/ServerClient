@@ -6,6 +6,7 @@ using System.Text;
 using Shared.Packets;
 
 namespace Shared {
+    // SHOULD BE THE SAME NAME AS THE CLASS!
     public enum PacketHeader {
         Connected, // send this to the client that connects
         CharacterDisconnect,
@@ -21,7 +22,8 @@ namespace Shared {
         ConnectedToMap,
         CharactersInMap,
         NotifyOtherPlayerMapChange, // Notify the other players that a character either DCed or changed map
-        ChangeMap
+        ChangeMap,
+        CreaturesInMap
     }
 
     public class PacketCreator {
@@ -31,6 +33,7 @@ namespace Shared {
 
             try {
                 switch (header) {
+                    // Make this smarter so it finds the correct class by the packet header
                     case PacketHeader.Movement:
                         return new Movement().FromByteArray(data);
                     case PacketHeader.Connected:
@@ -61,6 +64,8 @@ namespace Shared {
                         return new NotifyOtherPlayerMapChange().FromByteArray(data);
                     case PacketHeader.ChangeMap:
                         return new ChangeMap().FromByteArray(data);
+                    case PacketHeader.CreaturesInMap:
+                        return new CreaturesInMap().FromByteArray(data);
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

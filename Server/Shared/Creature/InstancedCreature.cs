@@ -1,4 +1,4 @@
-﻿namespace Server.Creature {
+﻿namespace Shared.Creature {
     public class InstancedCreature {
         public int InstanceId;
         public int TemplateId;

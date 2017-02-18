@@ -39,6 +39,8 @@
     <Compile Include="BaseNetworkPacket.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="CharacterClasses.cs" />
+    <Compile Include="Creature\CreatureTemplate.cs" />
+    <Compile Include="Creature\InstancedCreature.cs" />
     <Compile Include="NetworkVector3.cs" />
     <Compile Include="PacketCreator.cs" />
     <Compile Include="Packets\AccountRegister.cs" />
@@ -50,6 +52,7 @@
     <Compile Include="Packets\ConnectedToMap.cs" />
     <Compile Include="Packets\CreateCharacter.cs" />
     <Compile Include="Packets\CreateCharacterRespons.cs" />
+    <Compile Include="Packets\CreaturesInMap.cs" />
     <Compile Include="Packets\FullCharacterUpdate.cs" />
     <Compile Include="Packets\Login.cs" />
     <Compile Include="Packets\Movement.cs" />
