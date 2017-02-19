@@ -303,6 +303,18 @@ public class NetworkManager : MonoBehaviour {
                             Debug.Log("Found Creature in this map with ID of" + creature.InstanceId);
                             var creatureObj = Instantiate(CreaturePrefab);
                             creatureObj.transform.position = new Vector3(creature.X, creature.Y, creature.Z);
+                            creatureObj.GetComponent<Creature>().instanceId = creature.InstanceId;
+                        }
+
+                        break;
+                    case PacketHeader.MoveCreature:
+                        var moveCreature = (MoveCreature)packet;
+                        var creatures = GameObject.FindObjectsOfType<Creature>();
+
+                        foreach (var creature in creatures) {
+                            if (creature.instanceId == moveCreature.InstanceId) {
+                                creature.MoveTo(moveCreature.X, moveCreature.Y, moveCreature.Z);
+                            }
                         }
 
                         break;

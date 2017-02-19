@@ -93,6 +93,7 @@
      <Compile Include="Assets\AssetStoreTools\Standard Assets\Utility\WaypointProgressTracker.cs" />
      <Compile Include="Assets\AssetStoreTools\WaterPlus\Scripts\FlowmapAnimator.cs" />
      <Compile Include="Assets\AssetStoreTools\WaterPlus\Scripts\WaterPlusScript.cs" />
+     <Compile Include="Assets\Creature.cs" />
      <Compile Include="Assets\Scripts\CharacterCreation.cs" />
      <Compile Include="Assets\Scripts\CharacterEquipment.cs" />
      <Compile Include="Assets\Scripts\CharacterSelection.cs" />

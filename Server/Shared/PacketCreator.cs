@@ -23,7 +23,8 @@ namespace Shared {
         CharactersInMap,
         NotifyOtherPlayerMapChange, // Notify the other players that a character either DCed or changed map
         ChangeMap,
-        CreaturesInMap
+        CreaturesInMap,
+        MoveCreature
     }
 
     public class PacketCreator {

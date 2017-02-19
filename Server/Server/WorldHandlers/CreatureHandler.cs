@@ -3,6 +3,7 @@ using Shared.Creature;
 using Shared.Packets;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Server.WorldHandlers {
     public class CreatureHandler : WorldHandler {
@@ -14,6 +15,32 @@ namespace Server.WorldHandlers {
             GetSpawnedCreaturesFromDB();
 
             Callback.PlayerEnteredMap += Callback_PlayerEnteredMap;
+
+            Thread moveCreaturesThread = new Thread(MoveCreatures);
+            moveCreaturesThread.Start();
+        }
+
+        DateTime lastCreatureMove = DateTime.Now;
+
+        private void MoveCreatures() {
+            while (true) {
+                while ((DateTime.Now - lastCreatureMove).Seconds >= 5) {
+                    lastCreatureMove = DateTime.Now;
+
+                    foreach (var creature in _spawnedCreatures) {
+                        foreach (var players in MainServer.GetAllAccounts()) {
+                            var socketId = MainServer.GetSocketIdFromAccountId(players.AccountId);
+
+                            var newX = new Random(DateTime.Now.Millisecond + 303323 + +creature.Value.InstanceId).Next(-5, 5);
+                            var newZ = new Random(DateTime.Now.Millisecond + 5423 + creature.Value.InstanceId).Next(-5, 5);
+
+                            MainServer.SendData(
+                                socketId,
+                                new MoveCreature(socketId, creature.Value.InstanceId, newX, 0, newZ).ToByteArray());
+                        }
+                    }
+                }
+            }
         }
 
         private void Callback_PlayerEnteredMap(int socketId, int MapId) {
