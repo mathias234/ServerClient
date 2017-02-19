@@ -14,5 +14,8 @@ namespace Shared {
         public BaseNetworkPacket(int socketId) {
             SocketId = socketId;
         }
+
+        public virtual BaseNetworkPacket FromByteArray(byte[] byteArray) { return null; }
+        public virtual byte[] ToByteArray() { return null; }
     }
 }

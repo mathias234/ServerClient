@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class AccountRegister : BaseNetworkPacket, INetworkPacket<AccountRegister> {
+    public class AccountRegister : BaseNetworkPacket {
         public string Username { get; set; }
         public string Password { get; set; }
 
@@ -21,7 +21,7 @@ namespace Shared.Packets {
             Password = password;
         }
 
-        public AccountRegister FromByteArray(byte[] byteArray) {
+        public override BaseNetworkPacket FromByteArray(byte[] byteArray) {
             var br = new BinaryReader(new MemoryStream(byteArray));
 
             Header = (PacketHeader)br.ReadInt32();
@@ -32,7 +32,7 @@ namespace Shared.Packets {
             return this;
         }
 
-        public byte[] ToByteArray() {
+        public override byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.AccountRegister);
 

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class CreateCharacter : BaseNetworkPacket, INetworkPacket<CreateCharacter> {
+    public class CreateCharacter : BaseNetworkPacket {
         public string Name;
         public CharacterClasses CharClass;
 
@@ -21,7 +21,7 @@ namespace Shared.Packets {
             CharClass = charClass;
         }
 
-        public CreateCharacter FromByteArray(byte[] byteArray) {
+        public override BaseNetworkPacket FromByteArray(byte[] byteArray) {
             var br = new BinaryReader(new MemoryStream(byteArray));
 
             Header = (PacketHeader)br.ReadInt32();
@@ -32,7 +32,7 @@ namespace Shared.Packets {
             return this;
         }
 
-        public byte[] ToByteArray() {
+        public override byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.CreateCharacter);
 

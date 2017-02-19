@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class Movement : BaseNetworkPacket, INetworkPacket<Movement> {
+    public class Movement : BaseNetworkPacket {
         public NetworkVector3 NewPosition;
         public float YRotation { get; set; }
         public float Forward { get; set; }
@@ -39,7 +39,7 @@ namespace Shared.Packets {
             JumpLeg = jumpLeg;
         }
 
-        public byte[] ToByteArray() {
+        public override byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.Movement);
 
@@ -62,7 +62,7 @@ namespace Shared.Packets {
             return data;
         }
 
-        public Movement FromByteArray(byte[] byteArray) {
+        public override BaseNetworkPacket FromByteArray(byte[] byteArray) {
             var br = new BinaryReader(new MemoryStream(byteArray));
 
             Header = (PacketHeader)br.ReadInt32();

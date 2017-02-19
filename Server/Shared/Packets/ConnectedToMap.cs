@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Shared.Packets {
-    public class ConnectedToMap : BaseNetworkPacket, INetworkPacket<ConnectedToMap> {
+    public class ConnectedToMap : BaseNetworkPacket {
         public int MapId { get; set; }
 
         public ConnectedToMap() {
@@ -18,7 +18,7 @@ namespace Shared.Packets {
             MapId = mapId;
         }
 
-        public ConnectedToMap FromByteArray(byte[] byteArray) {
+        public override BaseNetworkPacket FromByteArray(byte[] byteArray) {
             var br = new BinaryReader(new MemoryStream(byteArray));
 
             Header = (PacketHeader)br.ReadInt32();
@@ -28,7 +28,7 @@ namespace Shared.Packets {
             return this;
         }
 
-        public byte[] ToByteArray() {
+        public override byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.ConnectedToMap);
 

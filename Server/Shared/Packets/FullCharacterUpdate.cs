@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Shared.Packets {
     // Get all data about a character
-    public class FullCharacterUpdate : BaseNetworkPacket, INetworkPacket<FullCharacterUpdate> {
+    public class FullCharacterUpdate : BaseNetworkPacket {
         public Character NewCharacter;
 
         public FullCharacterUpdate() {
@@ -24,7 +24,7 @@ namespace Shared.Packets {
             NewCharacter = new Character(-1, characterId, "", 0, CharacterClasses.Agent, 0, 0, 0, 0);
         }
 
-        public FullCharacterUpdate FromByteArray(byte[] byteArray) {
+        public override BaseNetworkPacket FromByteArray(byte[] byteArray) {
             var br = new BinaryReader(new MemoryStream(byteArray));
 
             Header = (PacketHeader)br.ReadInt32();
@@ -34,7 +34,7 @@ namespace Shared.Packets {
             return this;
         }
 
-        public byte[] ToByteArray() {
+        public override byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.FullCharacterUpdate);
 

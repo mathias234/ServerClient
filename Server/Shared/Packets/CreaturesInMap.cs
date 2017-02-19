@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 
 namespace Shared.Packets {
-    public class CreaturesInMap : BaseNetworkPacket, INetworkPacket<CreaturesInMap> {
+    public class CreaturesInMap : BaseNetworkPacket {
         public List<InstancedCreature> Creatures = new List<InstancedCreature>();
 
         public CreaturesInMap(int socketId, List<InstancedCreature> creatures) {
@@ -17,7 +17,7 @@ namespace Shared.Packets {
 
         }
 
-        public CreaturesInMap FromByteArray(byte[] byteArray) {
+        public override BaseNetworkPacket FromByteArray(byte[] byteArray) {
             var br = new BinaryReader(new MemoryStream(byteArray));
 
             Header = (PacketHeader)br.ReadInt32();
@@ -42,7 +42,7 @@ namespace Shared.Packets {
             return this;
         }
 
-        public byte[] ToByteArray() {
+        public override byte[] ToByteArray() {
             var bw = new BinaryWriter(new MemoryStream());
             bw.Write((int)PacketHeader.CreaturesInMap);
 
