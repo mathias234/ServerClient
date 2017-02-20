@@ -15,8 +15,6 @@ namespace Shared.Packets {
         public float Jump { get; set; }
         public float JumpLeg { get; set; }
 
-        public int Size => Marshal.SizeOf(SocketId) + Marshal.SizeOf(NewPosition.X) * 3 + Marshal.SizeOf(YRotation) * 5 + Marshal.SizeOf(Crouch) * 2;
-
         public Movement() {
             Forward = 0;
             Turn = 0;

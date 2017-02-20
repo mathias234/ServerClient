@@ -13,9 +13,14 @@ namespace ServerUI {
 
         private void Form1_Load(object sender, EventArgs e) {
             UpdateStartServerText();
+            ToggleServer();
         }
 
         private void StartServer_Click(object sender, EventArgs e) {
+            ToggleServer();
+        }
+
+        private void ToggleServer() {
             Log.NewLogMessage += Log_NewLogMessage;
 
             if (_serverStarted == false) {

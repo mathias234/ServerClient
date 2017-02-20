@@ -2,6 +2,7 @@
 using Shared.Creature;
 using Shared.Packets;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -27,20 +28,30 @@ namespace Server.WorldHandlers {
                 lastCreatureMove = DateTime.Now;
 
                 foreach (var creature in _spawnedCreatures) {
-                    foreach (var players in MainServer.GetAllAccounts()) {
-                        var socketId = MainServer.GetSocketIdFromAccountId(players.AccountId);
+                    var newX = creature.Value.X + new Random(DateTime.Now.Millisecond + 303323 + +creature.Value.InstanceId).Next(-5, 5);
+                    var newZ = creature.Value.X + new Random(DateTime.Now.Millisecond + 5423 + creature.Value.InstanceId).Next(-5, 5);
 
-                        var newX = new Random(DateTime.Now.Millisecond + 303323 + +creature.Value.InstanceId).Next(-5, 5);
-                        var newZ = new Random(DateTime.Now.Millisecond + 5423 + creature.Value.InstanceId).Next(-5, 5);
-
-                        MainServer.SendData(
-                            socketId,
-                            new MoveCreature(socketId, creature.Value.InstanceId, newX, 0, newZ).ToByteArray());
-                    }
+                    MoveCreature(creature.Value.InstanceId, newX, creature.Value.Y, newZ);
                 }
 
                 Thread.Sleep(5000);
             }
+        }
+
+        public void MoveCreature(int InstanceId, float x, float y, float z) {
+            var creature = _spawnedCreatures.First(crea => crea.Value.InstanceId == InstanceId);
+
+            foreach (var players in MainServer.GetAllAccounts()) {
+                var socketId = MainServer.GetSocketIdFromAccountId(players.AccountId);
+
+                MainServer.SendData(
+                    socketId,
+                    new MoveCreature(socketId, creature.Value.InstanceId, x, y, z).ToByteArray());
+            }
+
+            creature.Value.X = x;
+            creature.Value.Y = y;
+            creature.Value.Z = z;
         }
 
         private void Callback_PlayerEnteredMap(int socketId, int MapId) {
