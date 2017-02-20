@@ -24,22 +24,22 @@ namespace Server.WorldHandlers {
 
         private void MoveCreatures() {
             while (true) {
-                while ((DateTime.Now - lastCreatureMove).Seconds >= 5) {
-                    lastCreatureMove = DateTime.Now;
+                lastCreatureMove = DateTime.Now;
 
-                    foreach (var creature in _spawnedCreatures) {
-                        foreach (var players in MainServer.GetAllAccounts()) {
-                            var socketId = MainServer.GetSocketIdFromAccountId(players.AccountId);
+                foreach (var creature in _spawnedCreatures) {
+                    foreach (var players in MainServer.GetAllAccounts()) {
+                        var socketId = MainServer.GetSocketIdFromAccountId(players.AccountId);
 
-                            var newX = new Random(DateTime.Now.Millisecond + 303323 + +creature.Value.InstanceId).Next(-5, 5);
-                            var newZ = new Random(DateTime.Now.Millisecond + 5423 + creature.Value.InstanceId).Next(-5, 5);
+                        var newX = new Random(DateTime.Now.Millisecond + 303323 + +creature.Value.InstanceId).Next(-5, 5);
+                        var newZ = new Random(DateTime.Now.Millisecond + 5423 + creature.Value.InstanceId).Next(-5, 5);
 
-                            MainServer.SendData(
-                                socketId,
-                                new MoveCreature(socketId, creature.Value.InstanceId, newX, 0, newZ).ToByteArray());
-                        }
+                        MainServer.SendData(
+                            socketId,
+                            new MoveCreature(socketId, creature.Value.InstanceId, newX, 0, newZ).ToByteArray());
                     }
                 }
+
+                Thread.Sleep(5000);
             }
         }
 

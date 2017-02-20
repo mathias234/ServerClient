@@ -13,7 +13,7 @@ public class Creature : MonoBehaviour {
     }
 
     public void MoveTo(float x, float y, float z) {
-        destination = new Vector3(transform.position.x + x, transform.position.y + y, transform.position.z + z);
+        destination = new Vector3(x, y, z);
     }
 
     public void Update() {
