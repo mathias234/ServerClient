@@ -2,9 +2,10 @@
 using Shared;
 using Shared.Packets;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Server.Packet {
-    [PacketHandlerAttribute(PacketHeader.Login)]
+    [PacketHandlerAttribute(PacketHeader.Login, PacketHeader.AccountRegister)]
     public class LoginPacketHandler : BasePacketHandler {
         public override void HandlePacket(int socketId, BaseNetworkPacket packet) {
             switch (packet.Header) {
@@ -53,6 +54,35 @@ namespace Server.Packet {
 
                     MainServer.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed).ToByteArray());
 
+                    break;
+                case PacketHeader.AccountRegister:
+                    var register = (AccountRegister)packet;
+
+                    accounts = new List<Account>();
+
+                    if (!MainServer.MainDb.Run("SELECT * FROM accounts", out reader)) {
+                        Log.Error("Failed to find accounts");
+                    } else {
+                        while (reader.Read()) {
+                            accounts.Add(new Account((int)reader["id"], (string)reader["username"],
+                                (string)reader["password"] + "", null, ((int)reader["isOnline"]) == 1 ? true : false));
+                        }
+                        reader.Close();
+                    }
+
+                    if (accounts.Any(account => account.Username == register.Username)) {
+                        MainServer.SendData(socketId,
+                            new RegisterRespons(socketId, RegisterRespons.RegisterResponses.UsernameAlreadyInUse).ToByteArray());
+                        return;
+                    }
+
+                    // fix for probleme where mysql breaks if a password contains '
+                    register.Password = register.Password.Replace('\'', '3');
+
+                    if (MainServer.MainDb.Run("INSERT INTO `accounts` (`username`, `password`) VALUES " +
+                                          "('" + register.Username + "', '" + register.Password + "');")) {
+                        MainServer.SendData(socketId, new RegisterRespons(socketId, RegisterRespons.RegisterResponses.Success).ToByteArray());
+                    }
                     break;
             }
         }
