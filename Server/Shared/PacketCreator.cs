@@ -32,12 +32,12 @@ namespace Shared {
             var br = new BinaryReader(new MemoryStream(data));
             var header = (PacketHeader)br.ReadInt32();
 
-            Type type = Type.GetType("Shared.Packets." + header);
+            var packetType = Type.GetType("Shared.Packets." + header);
 
-            if (type == null)
+            if (packetType == null)
                 return null;
 
-            var instance = (BaseNetworkPacket)Activator.CreateInstance(type);
+            var instance = (BaseNetworkPacket)Activator.CreateInstance(packetType);
 
             return instance.FromByteArray(data);
         }

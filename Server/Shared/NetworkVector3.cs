@@ -17,20 +17,5 @@ namespace Shared {
             Y = y;
             Z = z;
         }
-
-        public static NetworkVector3 Deserialze(string vector) {
-            var vector3 = new NetworkVector3();
-
-            var position = vector.Split(' ');
-            vector3.X = float.Parse(position[0]);
-            vector3.Y = float.Parse(position[1]);
-            vector3.Z = float.Parse(position[2]);
-
-            return vector3;
-        }
-
-        public string Serialize() {
-            return X + " " + Y + " " + Z;
-        }
     }
 }

@@ -6,12 +6,51 @@ using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Shared.Packets;
 using Shared;
+using Server.Packet;
+using System.Reflection;
 
 namespace Server {
-    public class PacketHandler {
+    [AttributeUsage(AttributeTargets.Class)]
+    public class PacketHandlerAttribute : Attribute {
+        public List<PacketHeader> PacketHeaders;
+
+        public PacketHandlerAttribute(params PacketHeader[] packetHeaders) {
+            PacketHeaders = new List<PacketHeader>();
+
+            foreach (var packet in packetHeaders) {
+                PacketHeaders.Add(packet);
+            }
+        }
+    }
+
+    public class PacketHandler { 
+        public static List<BasePacketHandler> initializedPacketHandlers = new List<BasePacketHandler>();
+
         public static int HandlePacket(int socketId, BaseNetworkPacket packet) {
             if (packet?.Header == null)
                 return 0;
+
+            var baseType = typeof(BasePacketHandler);
+            var handlers = Assembly.GetAssembly(baseType).GetTypes().Where(t => t != baseType && baseType.IsAssignableFrom(t));
+
+            foreach (var handler in handlers) {
+                var attribute = (PacketHandlerAttribute)Attribute.GetCustomAttribute(handler, typeof(PacketHandlerAttribute));
+                foreach (var packetHeader in attribute.PacketHeaders) {
+                    if (packetHeader == packet.Header) {
+                        foreach (var packetHandler in initializedPacketHandlers) {
+                            if (packetHandler.GetType() == handler) {
+                                packetHandler.HandlePacket(socketId, packet);
+                                return 0;
+                            }
+                        }
+
+                        BasePacketHandler initializedHandler = (BasePacketHandler)Activator.CreateInstance(handler);
+                        initializedPacketHandlers.Add(initializedHandler);
+                        initializedHandler.HandlePacket(socketId, packet);
+                    }
+                }
+            }
+
 
             switch (packet.Header) {
                 case PacketHeader.Movement:
@@ -30,55 +69,14 @@ namespace Server {
                         movement.Turn, movement.Crouch, movement.OnGround, movement.Jump, movement.JumpLeg);
                     break;
                 case PacketHeader.Login:
-                    var login = (Login)packet;
-
-                    MySqlDataReader reader;
-
-                    var accounts = new List<Account>();
-
-                    if (!MainServer.MainDb.Run("SELECT * FROM accounts", out reader)) {
-                        Log.Error("Failed to find accounts");
-                    } else {
-                        while (reader.Read()) {
-                            accounts.Add(new Account((int)reader["id"], (string)reader["username"],
-                                (string)reader["password"] + "", null, ((int)reader["isOnline"]) == 1 ? true : false));
-                        }
-                        reader.Close();
-                    }
-
-                    // fix for probleme where mysql breaks if a password contains '
-                    login.Password = login.Password.Replace('\'', '3');
-
-                    foreach (var account in accounts) {
-                        if (account.Username == login.Username && login.Password == account.Password) {
-                            if (!account.IsOnline) {
-                                account.IsOnline = true;
-                                MainServer.UpdateAccountId(socketId, account);
-                                MainServer.SendData(socketId,
-                                    new AuthenticationRespons(socketId,
-                                        AuthenticationRespons.AuthenticationResponses.Success).ToByteArray());
-
-                                DbAccount dbAccount = new DbAccount(account);
-                                dbAccount.SaveToDb();
-
-                                return 1;
-                            } else {
-                                MainServer.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.AlreadyLoggedIn).ToByteArray());
-                                return 1;
-                            }
-                        } else {
-                            MainServer.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.WrongUsernameAndPassword).ToByteArray());
-                            return 1;
-                        }
-                    }
-
-                    MainServer.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.Failed).ToByteArray());
-
+                  
                     break;
                 case PacketHeader.AccountRegister:
                     var register = (AccountRegister)packet;
 
-                    accounts = new List<Account>();
+                    var accounts = new List<Account>();
+
+                    MySqlDataReader reader;
 
                     if (!MainServer.MainDb.Run("SELECT * FROM accounts", out reader)) {
                         Log.Error("Failed to find accounts");
