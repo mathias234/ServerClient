@@ -41,6 +41,7 @@
     <Compile Include="CharacterClasses.cs" />
     <Compile Include="Creature\CreatureTemplate.cs" />
     <Compile Include="Creature\InstancedCreature.cs" />
+    <Compile Include="Creature\Waypoint.cs" />
     <Compile Include="NetworkVector3.cs" />
     <Compile Include="PacketCreator.cs" />
     <Compile Include="Packets\AccountRegister.cs" />

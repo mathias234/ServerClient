@@ -17,41 +17,67 @@ namespace Server.WorldHandlers {
 
             Callback.PlayerEnteredMap += Callback_PlayerEnteredMap;
 
-            Thread moveCreaturesThread = new Thread(MoveCreatures);
-            moveCreaturesThread.Start();
+            foreach (var creature in _spawnedCreatures) {
+                Thread t = new Thread(new ParameterizedThreadStart(MoveCreature));
+                t.Start(creature.Value);
+            }
         }
 
         DateTime lastCreatureMove = DateTime.Now;
 
-        private void MoveCreatures() {
+        private void MoveCreature(object param) {
+            int lastWaypoint = -1;
+
             while (true) {
-                lastCreatureMove = DateTime.Now;
+                // make sure we get an updated version if its been modified elsewhere which is very likely
+                var creature = _spawnedCreatures[((InstancedCreature)param).InstanceId];
 
-                foreach (var creature in _spawnedCreatures) {
-                    var newX = creature.Value.X + new Random(DateTime.Now.Millisecond + 303323 + +creature.Value.InstanceId).Next(-5, 5);
-                    var newZ = creature.Value.X + new Random(DateTime.Now.Millisecond + 5423 + creature.Value.InstanceId).Next(-5, 5);
+                if (creature.Waypoints.Count <= lastWaypoint + 1) {
+                    lastWaypoint = -1;
+                    Log.Debug("finished");
+                } else {
+                    lastWaypoint++;
+                    var currentWaypoint = creature.Waypoints[lastWaypoint];
 
-                    MoveCreature(creature.Value.InstanceId, newX, creature.Value.Y, newZ);
+                    var newX = currentWaypoint.X;
+                    var newZ = currentWaypoint.Z;
+
+                    MoveCreature(creature.InstanceId, newX, creature.Y, newZ);
+
+                    Log.Debug("moving to X: " + newX + " Z: " + newZ);
+
+                    Thread.Sleep(currentWaypoint.StayTime);
                 }
 
-                Thread.Sleep(5000);
+
+
+                //lastCreatureMove = DateTime.Now;
+
+                //var newX = creature.X + new Random(DateTime.Now.Millisecond + 303323 + creature.InstanceId).Next(-5, 5);
+                //var newZ = creature.X + new Random(DateTime.Now.Millisecond + 5423 + creature.InstanceId).Next(-5, 5);
+
+                //MoveCreature(creature.InstanceId, newX, creature.Y, newZ);
+
+                Log.Debug(creature.InstanceId + ":" + creature.Waypoints.Count);
+
+                //Thread.Sleep(5000);
             }
         }
 
         public void MoveCreature(int InstanceId, float x, float y, float z) {
-            var creature = _spawnedCreatures.First(crea => crea.Value.InstanceId == InstanceId);
+            var creature = _spawnedCreatures[InstanceId];
 
             foreach (var players in MainServer.GetAllAccounts()) {
                 var socketId = MainServer.GetSocketIdFromAccountId(players.AccountId);
 
                 MainServer.SendData(
                     socketId,
-                    new MoveCreature(socketId, creature.Value.InstanceId, x, y, z).ToByteArray());
+                    new MoveCreature(socketId, creature.InstanceId, x, y, z).ToByteArray());
             }
 
-            creature.Value.X = x;
-            creature.Value.Y = y;
-            creature.Value.Z = z;
+            creature.X = x;
+            creature.Y = y;
+            creature.Z = z;
         }
 
         private void Callback_PlayerEnteredMap(int socketId, int MapId) {
@@ -86,16 +112,44 @@ namespace Server.WorldHandlers {
                 Log.Error("Failed to find spawned creatures");
             } else {
                 while (reader.Read()) {
-                    _spawnedCreatures.Add((int)reader["instanceId"], new InstancedCreature(
-                                                                (int)reader["instanceId"],
-                                                                (int)reader["templateId"],
-                                                                (float)reader["x"],
-                                                                (float)reader["y"],
-                                                                (float)reader["z"],
-                                                                (int)reader["mapId"]));
+                    var creature = new InstancedCreature(
+                        (int)reader["instanceId"],
+                        (int)reader["templateId"],
+                        (float)reader["x"],
+                        (float)reader["y"],
+                        (float)reader["z"],
+                        (int)reader["mapId"]);
+
+
+                    _spawnedCreatures.Add(creature.InstanceId, creature);
+                }
+                reader.Close();
+
+                foreach (var creature in _spawnedCreatures) {
+                    creature.Value.Waypoints = GetWaypointsForCreature(creature.Value.InstanceId);
+                }
+            }
+        }
+
+        public List<Waypoint> GetWaypointsForCreature(int instanceid) {
+            var waypoints = new List<Waypoint>();
+
+            if (!MainServer.MainDb.Run("SELECT * FROM creature_waypoints where instanceid=" + instanceid + "", out var reader)) {
+                Log.Error("Failed to find waypoints");
+            } else {
+                while (reader.Read()) {
+                    var waypoint = new Waypoint(
+                        (int)reader["stayTime"],
+                        (float)reader["x"],
+                        (float)reader["y"],
+                        (float)reader["z"]);
+
+                    waypoints.Add(waypoint);
                 }
                 reader.Close();
             }
+
+            return waypoints;
         }
 
         public List<InstancedCreature> GetCreaturesInMap(int mapId) {

@@ -1,11 +1,15 @@
-﻿namespace Shared.Creature {
+﻿using System.Collections.Generic;
+
+namespace Shared.Creature {
     public class InstancedCreature {
-        public int InstanceId;
-        public int TemplateId;
-        public float X;
-        public float Y;
-        public float Z;
-        public int MapId;
+        public int InstanceId { get; set; }
+        public int TemplateId { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public int MapId { get; set; }
+
+        public List<Waypoint> Waypoints { get; set; } 
 
         public InstancedCreature() {
 

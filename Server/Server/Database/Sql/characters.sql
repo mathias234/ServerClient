@@ -24,10 +24,13 @@ CREATE TABLE IF NOT EXISTS `characters` (
   `z` float DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 -- Dumping data for table main.characters: ~0 rows (approximately)
 /*!40000 ALTER TABLE `characters` DISABLE KEYS */;
+REPLACE INTO `characters` (`id`, `accountId`, `characterName`, `characterLevel`, `characterClass`, `mapId`, `x`, `y`, `z`) VALUES
+	(1, 1, 'Main', 1, 0, 1, 59.0728, 59.016, 24.218),
+	(2, 4, 'Swifty', 1, 0, 1, 53, 65, 35);
 /*!40000 ALTER TABLE `characters` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

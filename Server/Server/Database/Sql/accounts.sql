@@ -19,12 +19,12 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `isOnline` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
 -- Dumping data for table main.accounts: ~1 rows (approximately)
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
 REPLACE INTO `accounts` (`id`, `username`, `password`, `isOnline`) VALUES
-	(1, 'admin', '?Y???F8?Oc???S?b??', 0);
+	(4, 'admin', '?Y???F8?Oc???S?b??', 1);
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
