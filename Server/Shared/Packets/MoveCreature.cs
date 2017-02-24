@@ -9,17 +9,19 @@ namespace Shared.Packets {
         public float X;
         public float Y;
         public float Z;
+        public float Speed;
 
         public MoveCreature() {
             SocketId = -1;
         }
 
-        public MoveCreature(int socketId, int instanceId, float x, float y, float z) {
+        public MoveCreature(int socketId, int instanceId, float x, float y, float z, float speed) {
             SocketId = socketId;
             InstanceId = instanceId;
             X = x;
             Y = y;
             Z = z;
+            Speed = speed;
         }
 
         public override BaseNetworkPacket FromByteArray(byte[] byteArray) {
@@ -32,6 +34,7 @@ namespace Shared.Packets {
             X = br.ReadSingle();
             Y = br.ReadSingle();
             Z = br.ReadSingle();
+            Speed = br.ReadSingle();
 
             return this;
         }
@@ -45,6 +48,7 @@ namespace Shared.Packets {
             bw.Write(X);
             bw.Write(Y);
             bw.Write(Z);
+            bw.Write(Speed);
 
             var data = ((MemoryStream)bw.BaseStream).ToArray();
 

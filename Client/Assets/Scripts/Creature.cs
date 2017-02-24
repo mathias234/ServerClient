@@ -8,7 +8,7 @@ public class Creature : MonoBehaviour {
 
     public Vector3 destination;
 
-    public float speed = 1.0F;
+    public float Speed = 1.0F;
     private float startTime;
     private float journeyLength;
 
@@ -19,11 +19,12 @@ public class Creature : MonoBehaviour {
         startTime = Time.time;
     }
 
-    public void MoveTo(float x, float y, float z) {
+    public void MoveTo(float x, float y, float z, float speed) {
         destination = new Vector3(x, CalculateY(x,z), z);
         startTime = Time.time;
         startPosition = transform.position;
         journeyLength = Vector3.Distance(transform.position, destination);
+        Speed = speed;
     }
 
     public float CalculateY(float x, float z) {
@@ -35,8 +36,11 @@ public class Creature : MonoBehaviour {
     }
 
     public void Update() {
-        float distCovered = (Time.time - startTime) * speed;
+        float distCovered = (Time.time - startTime) * Speed;
         float fracJourney = distCovered / journeyLength;
         transform.position = Vector3.Lerp(startPosition, destination, fracJourney);
+
+        // TODO: dont do this.
+        transform.position = new Vector3(transform.position.x, CalculateY(transform.position.x, transform.position.z), transform.position.z);
     }
 }

@@ -313,7 +313,7 @@ public class NetworkManager : MonoBehaviour {
 
                         foreach (var creature in creatures) {
                             if (creature.instanceId == moveCreature.InstanceId) {
-                                creature.MoveTo(moveCreature.X, moveCreature.Y, moveCreature.Z);
+                                creature.MoveTo(moveCreature.X, moveCreature.Y, moveCreature.Z, moveCreature.Speed);
                             }
                         }
 

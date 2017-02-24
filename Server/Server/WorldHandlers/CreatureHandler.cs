@@ -1,8 +1,6 @@
-﻿using MySql.Data.MySqlClient;
-using Shared.Creature;
+﻿using Shared.Creature;
 using Shared.Packets;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -26,45 +24,59 @@ namespace Server.WorldHandlers {
         DateTime lastCreatureMove = DateTime.Now;
 
         private void MoveCreature(object param) {
-            int lastWaypoint = -1;
-
             while (true) {
                 // make sure we get an updated version if its been modified elsewhere which is very likely
                 var creature = _spawnedCreatures[((InstancedCreature)param).InstanceId];
 
-                if (creature.Waypoints.Count <= lastWaypoint + 1) {
-                    lastWaypoint = -1;
-                    Log.Debug("finished");
-                } else {
-                    lastWaypoint++;
-                    var currentWaypoint = creature.Waypoints[lastWaypoint];
-
-                    var newX = currentWaypoint.X;
-                    var newZ = currentWaypoint.Z;
-
-                    MoveCreature(creature.InstanceId, newX, creature.Y, newZ);
-
-                    Log.Debug("moving to X: " + newX + " Z: " + newZ);
-
-                    Thread.Sleep(currentWaypoint.StayTime);
+                switch (creature.state) {
+                    case CreatureState.Idle:
+                        break;
+                    case CreatureState.WalkingWaypoints:
+                        WalkWaypoint(creature);
+                        break;
+                    case CreatureState.FollowingPlayer:
+                        FollowPlayer(0, creature);
+                        break;
+                    default:
+                        break;
                 }
-
-
-
-                //lastCreatureMove = DateTime.Now;
-
-                //var newX = creature.X + new Random(DateTime.Now.Millisecond + 303323 + creature.InstanceId).Next(-5, 5);
-                //var newZ = creature.X + new Random(DateTime.Now.Millisecond + 5423 + creature.InstanceId).Next(-5, 5);
-
-                //MoveCreature(creature.InstanceId, newX, creature.Y, newZ);
-
-                Log.Debug(creature.InstanceId + ":" + creature.Waypoints.Count);
-
-                //Thread.Sleep(5000);
             }
         }
 
-        public void MoveCreature(int InstanceId, float x, float y, float z) {
+        public void FollowPlayer(int playerId, InstancedCreature creature) {
+            Account player = MainServer.GetAccountFromSocketId(playerId);
+
+            if (player == null || player.CharacterOnline == null) {
+                Thread.Sleep(5000);
+                return;
+            }
+
+            MoveCreature(creature.InstanceId, player.CharacterOnline.X, player.CharacterOnline.Y, player.CharacterOnline.Z, 2);
+            Thread.Sleep(500);
+        }
+
+        public void WalkWaypoint(InstancedCreature creature) {
+            if (creature.Waypoints == null || creature.Waypoints.Count <= 0) {
+                creature.state = CreatureState.Idle;
+                return;
+            }
+
+            if (creature.Waypoints.Count <= creature.LastWaypoint + 1) {
+                creature.LastWaypoint = -1;
+            } else {
+                creature.LastWaypoint++;
+                var currentWaypoint = creature.Waypoints[creature.LastWaypoint];
+
+                var newX = currentWaypoint.X;
+                var newZ = currentWaypoint.Z;
+
+                MoveCreature(creature.InstanceId, newX, creature.Y, newZ, 2);
+
+                Thread.Sleep(currentWaypoint.StayTime);
+            }
+        }
+
+        public void MoveCreature(int InstanceId, float x, float y, float z, float speed) {
             var creature = _spawnedCreatures[InstanceId];
 
             foreach (var players in MainServer.GetAllAccounts()) {
@@ -72,7 +84,7 @@ namespace Server.WorldHandlers {
 
                 MainServer.SendData(
                     socketId,
-                    new MoveCreature(socketId, creature.InstanceId, x, y, z).ToByteArray());
+                    new MoveCreature(socketId, creature.InstanceId, x, y, z, speed).ToByteArray());
             }
 
             creature.X = x;

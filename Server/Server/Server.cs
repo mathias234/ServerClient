@@ -61,7 +61,7 @@ namespace Server {
                 var DbChar = new DbCharacter(accounts.Value.CharacterOnline);
                 DbChar.SaveToDb();
             }
-        } 
+        }
 
         private static void SetupServer(int port) {
             Log.Debug("Setting up server...");
@@ -184,7 +184,10 @@ namespace Server {
         }
 
         public static Account GetAccountFromSocketId(int socketId) {
-            return _clientSockets[socketId];
+            if (_clientSockets.ContainsKey(socketId))
+                return _clientSockets[socketId];
+            else
+                return null;
         }
 
         public static int GetSocketIdFromAccountId(int accountId) {
