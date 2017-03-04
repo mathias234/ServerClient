@@ -41,6 +41,8 @@ namespace Server.Packet {
                                 DbAccount dbAccount = new DbAccount(account);
                                 dbAccount.SaveToDb();
 
+                                Callback.PlayerLogin(socketId);
+
                                 return;
                             } else {
                                 MainServer.SendData(socketId, new AuthenticationRespons(socketId, AuthenticationRespons.AuthenticationResponses.AlreadyLoggedIn).ToByteArray());

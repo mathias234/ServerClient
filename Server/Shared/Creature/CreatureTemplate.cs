@@ -1,4 +1,7 @@
-﻿namespace Shared.Creature {
+﻿using System;
+
+namespace Shared.Creature {
+    [Serializable]
     public class CreatureTemplate {
         public int TemplateId;
         public string Name;

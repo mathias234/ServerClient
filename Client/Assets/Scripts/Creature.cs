@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Creature : MonoBehaviour {
     public int instanceId;
@@ -13,6 +14,8 @@ public class Creature : MonoBehaviour {
     private float journeyLength;
 
     public Vector3 startPosition;
+
+    public Text NameObj;
 
     public void Start() {
         destination = transform.position;
@@ -42,5 +45,9 @@ public class Creature : MonoBehaviour {
 
         // TODO: dont do this.
         transform.position = new Vector3(transform.position.x, CalculateY(transform.position.x, transform.position.z), transform.position.z);
+    }
+
+    public void SetName(string name) {
+        NameObj.text = name;
     }
 }

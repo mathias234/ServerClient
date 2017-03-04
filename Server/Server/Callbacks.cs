@@ -11,11 +11,7 @@ namespace Server {
     /// that the creature handler needs to know when a players joins so i would just add itself to OnPlayerEnterMap
     /// </summary>
     public static class Callback {
-        public delegate void OnPlayerEnterMap(int AccountSocketId, int MapId);
-        public static event OnPlayerEnterMap PlayerEnteredMap;
-
-        public static void CallPlayerEnteredMap(int AccountSocketId, int MapId) {
-            PlayerEnteredMap(AccountSocketId, MapId);
-        }
+        public static Action<int, int> PlayerEnteredMap;
+        public static Action<int> PlayerLogin;
     }
 }

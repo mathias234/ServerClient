@@ -36,9 +36,6 @@ public class NetworkManager : MonoBehaviour {
     public GameObject CharacterTemplate;
     public GameObject Character;
 
-    public GameObject CreaturePrefab;
-
-
     public enum LoginStatus {
         Idle,
         Connecting,
@@ -301,9 +298,7 @@ public class NetworkManager : MonoBehaviour {
 
                         foreach (var creature in creaturesInMap.Creatures) {
                             Debug.Log("Found Creature in this map with ID of" + creature.InstanceId);
-                            var creatureObj = Instantiate(CreaturePrefab);
-                            creatureObj.transform.position = new Vector3(creature.X, creature.Y, creature.Z);
-                            creatureObj.GetComponent<Creature>().instanceId = creature.InstanceId;
+                            CreatureManager.Instance.SpawnCreature(creature);
                         }
 
                         break;
@@ -317,6 +312,11 @@ public class NetworkManager : MonoBehaviour {
                             }
                         }
 
+                        break;
+                    case PacketHeader.CreatureTemplates:
+                        var creatureTemplates = (CreatureTemplates)packet;
+
+                        CreatureManager.Instance.Templates = creatureTemplates.Creatures;
                         break;
                     default:
                         Debug.LogError("Unhandled packet received");

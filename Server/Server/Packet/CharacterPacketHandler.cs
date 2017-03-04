@@ -68,7 +68,7 @@ namespace Server.Packet {
                         MainServer.SendData(MainServer.GetSocketIdFromAccountId(account.AccountId), new NotifyOtherPlayerMapChange(socketId, -1, MainServer.GetAccountFromSocketId(socketId).CharacterOnline).ToByteArray());
                     }
 
-                    Callback.CallPlayerEnteredMap(socketId, connectedToMap.MapId);
+                    Callback.PlayerEnteredMap(socketId, connectedToMap.MapId);
 
                     break;
                 case PacketHeader.ChangeMap:

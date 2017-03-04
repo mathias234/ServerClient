@@ -13,12 +13,24 @@ namespace Server.WorldHandlers {
             LoadCreatureTemplatesFromDB();
             GetSpawnedCreaturesFromDB();
 
+            Callback.PlayerLogin += Callback_PlayerLogin;
             Callback.PlayerEnteredMap += Callback_PlayerEnteredMap;
 
             foreach (var creature in _spawnedCreatures) {
                 Thread t = new Thread(new ParameterizedThreadStart(MoveCreature));
                 t.Start(creature.Value);
             }
+        }
+
+        // send the creature templates to this player
+        private void Callback_PlayerLogin(int socketId) {
+            List<CreatureTemplate> creatureTemplates = new List<CreatureTemplate>();
+
+            foreach (var creature in _creatureTemplates) {
+                creatureTemplates.Add(creature.Value);
+            }
+
+            MainServer.SendData(socketId, new CreatureTemplates(socketId, creatureTemplates).ToByteArray());
         }
 
         DateTime lastCreatureMove = DateTime.Now;

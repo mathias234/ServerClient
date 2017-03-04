@@ -98,6 +98,7 @@
      <Compile Include="Assets\Scripts\CharacterSelection.cs" />
      <Compile Include="Assets\Scripts\CharacterStats.cs" />
      <Compile Include="Assets\Scripts\Creature.cs" />
+     <Compile Include="Assets\Scripts\CreatureManager.cs" />
      <Compile Include="Assets\Scripts\DontDestroyOnLoad.cs" />
      <Compile Include="Assets\Scripts\GetLoginStatus.cs" />
      <Compile Include="Assets\Scripts\NetworkCharacter.cs" />
