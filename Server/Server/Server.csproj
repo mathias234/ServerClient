@@ -54,6 +54,7 @@
     <Compile Include="Packet\CharacterPacketHandler.cs" />
     <Compile Include="Packet\CharacterSelectionPacketHandler.cs" />
     <Compile Include="Packet\LoginPacketHandler.cs" />
+    <Compile Include="ThreadManager.cs" />
     <Compile Include="WorldHandlers\CreatureHandler.cs" />
     <Compile Include="Database\Database.cs" />
     <Compile Include="Database\DbAccount.cs" />

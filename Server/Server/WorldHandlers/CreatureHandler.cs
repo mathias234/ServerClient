@@ -17,8 +17,7 @@ namespace Server.WorldHandlers {
             Callback.PlayerEnteredMap += Callback_PlayerEnteredMap;
 
             foreach (var creature in _spawnedCreatures) {
-                Thread t = new Thread(new ParameterizedThreadStart(MoveCreature));
-                t.Start(creature.Value);
+                ThreadManager.StartThread(MoveCreature, creature.Value);
             }
         }
 
@@ -42,6 +41,7 @@ namespace Server.WorldHandlers {
 
                 switch (creature.state) {
                     case CreatureState.Idle:
+                        Thread.Sleep(5000);
                         break;
                     case CreatureState.WalkingWaypoints:
                         WalkWaypoint(creature);

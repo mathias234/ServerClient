@@ -6,14 +6,16 @@ using System.Windows.Forms;
 
 namespace ServerUI {
     public partial class Form1 : Form {
+        private MainServer _mainServer;
         private bool _serverStarted = false;
+
         public Form1() {
             InitializeComponent();
         }
 
         private void Form1_Load(object sender, EventArgs e) {
             UpdateStartServerText();
-            ToggleServer();
+            //ToggleServer();
         }
 
         private void StartServer_Click(object sender, EventArgs e) {
@@ -21,14 +23,20 @@ namespace ServerUI {
         }
 
         private void ToggleServer() {
-            Log.NewLogMessage += Log_NewLogMessage;
-
             if (_serverStarted == false) {
-                MainServer.Start();
+                Log.NewLogMessage += Log_NewLogMessage;
+                _mainServer = new MainServer();
+                _mainServer.Start();
                 _serverStarted = true;
                 Timer1.Enabled = true;
             } else {
-                Application.Exit();
+                _mainServer.Stop();
+                _mainServer = null;
+                _serverStarted = false;
+                Timer1.Enabled = false;
+                OutputField.Clear();
+                Log.NewLogMessage -= Log_NewLogMessage;
+                GC.Collect();
             }
 
 
@@ -87,7 +95,8 @@ namespace ServerUI {
         }
 
         private void SaveTimer_Tick(object sender, EventArgs e) {
-            MainServer.Save();
+            if (_mainServer != null)
+                _mainServer.Save();
         }
     }
 }

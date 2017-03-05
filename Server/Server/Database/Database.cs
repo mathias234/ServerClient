@@ -72,6 +72,7 @@ namespace Server {
         public bool CloseConnection() {
             try {
                 _connection.Close();
+                _connection.Dispose();
                 return true;
             } catch (MySqlException ex) {
                 Log.Error(ex.Message);

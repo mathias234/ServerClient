@@ -11,22 +11,32 @@ using System.Threading;
 
 namespace Server {
     public class MainServer {
-        private static int maxBufferSize = 1024;
-        private static byte[] _buffer = new byte[maxBufferSize];
+        private byte[] _buffer = new byte[1024];
 
-        private static Dictionary<int, Account> _clientSockets = new Dictionary<int, Account>();
+        private Dictionary<int, Account> _clientSockets = new Dictionary<int, Account>();
 
-        private static Socket _serverSocket;
+        private Socket _serverSocket;
 
-        public static int LastKey;
+        public int LastKey;
 
-        public static Database MainDb;
+        public static Database MainDb {
+            get {
+                if (instance != null)
+                    return instance.Internal_MainDb;
+                return null;
+            }
+        }
 
-        public static int timeSinceLastSave;
+        private Database Internal_MainDb;
 
-        public static void Start() {
+        public int timeSinceLastSave;
+
+        public static MainServer instance;
+
+        public void Start() {
+            instance = this;
             Log.Debug("Opening a DB connection");
-            MainDb = new Database("localhost", "main", "root", "root");
+            Internal_MainDb = new Database("localhost", "main", "root", "root");
 
             InitializeHandlers();
 
@@ -34,10 +44,26 @@ namespace Server {
             SetupServer(3003);
 
             CleanUpCrash();
-
         }
 
-        private static void InitializeHandlers() {
+        public void Stop() {
+            Save();
+            instance = null;
+            Internal_MainDb.CloseConnection();
+            Internal_MainDb = null;
+            _buffer = null;
+            foreach (var client in _clientSockets) {
+                client.Value.Socket.Close();
+            }
+            _clientSockets = null;
+
+            _serverSocket.Close();
+            _serverSocket = null;
+            LastKey = 0;
+            ThreadManager.Stop();
+        }
+
+        private void InitializeHandlers() {
             var baseType = typeof(WorldHandler);
             var handlers = Assembly.GetAssembly(baseType).GetTypes().Where(t => t != baseType && baseType.IsAssignableFrom(t));
 
@@ -51,11 +77,11 @@ namespace Server {
         }
 
         // run this on start in case the server crashed last run
-        public static void CleanUpCrash() {
+        public void CleanUpCrash() {
             MainDb.Run("UPDATE accounts SET isOnline='0'");
         }
 
-        public static void Save() {
+        public void Save() {
             foreach (var accounts in _clientSockets) {
                 Log.Debug("Saving");
                 var DbChar = new DbCharacter(accounts.Value.CharacterOnline);
@@ -63,7 +89,7 @@ namespace Server {
             }
         }
 
-        private static void SetupServer(int port) {
+        private void SetupServer(int port) {
             Log.Debug("Setting up server...");
             _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -74,8 +100,17 @@ namespace Server {
             Log.Debug("Server Started");
         }
 
-        private static void AcceptCallback(IAsyncResult result) {
-            var socket = _serverSocket.EndAccept(result);
+        private void AcceptCallback(IAsyncResult result) {
+            Socket socket;
+            try {
+                if (_serverSocket != null)
+                    socket = _serverSocket.EndAccept(result);
+                else
+                    return;
+            } catch (System.ObjectDisposedException) {
+                // fine
+                return;
+            }
 
             _clientSockets.Add(LastKey, /* a temporary account */ new Account(-1, "", "", socket, true));
 
@@ -90,13 +125,23 @@ namespace Server {
             _serverSocket.BeginAccept(AcceptCallback, null);
         }
 
-        private static void RecievedCallback(IAsyncResult result) {
+        private void RecievedCallback(IAsyncResult result) {
             var socketId = (int)result.AsyncState;
 
             try {
+                if (_clientSockets == null) return;
                 if (!_clientSockets.ContainsKey(socketId)) return;
 
-                var received = _clientSockets[socketId].Socket.EndReceive(result);
+                int received;
+
+                try {
+                    received = _clientSockets[socketId].Socket.EndReceive(result);
+                } catch (System.ObjectDisposedException) {
+                    // fine
+                    return;
+                }
+
+
 
                 if (received == 0) {
                     CleanupDisconnectedPlayer(socketId);
@@ -118,7 +163,7 @@ namespace Server {
         }
 
         // This probably should inform the other players that someone disconnected
-        public static void CleanupDisconnectedPlayer(int socketId) {
+        public void CleanupDisconnectedPlayer(int socketId) {
             if (_clientSockets.ContainsKey(socketId)) {
                 new DbCharacter(_clientSockets[socketId].CharacterOnline).SaveToDb();
                 SendCharacterDisconnect(socketId);
@@ -134,6 +179,11 @@ namespace Server {
         }
 
         public static void SendData(int socketId, byte[] data) {
+            if (instance != null)
+                instance.Internal_SendData(socketId, data);
+        }
+
+        private void Internal_SendData(int socketId, byte[] data) {
             try {
                 _clientSockets[socketId].Socket.BeginSend(data, 0, data.Length, SocketFlags.None, SendCallbakck, socketId);
             } catch (Exception) {
@@ -141,7 +191,7 @@ namespace Server {
             }
         }
 
-        private static void SendCharacterDisconnect(int socketId) {
+        private void SendCharacterDisconnect(int socketId) {
             foreach (var clientSocket in _clientSockets) {
                 if (clientSocket.Key == socketId) {
                     // this is the socket that disconnected nothing should happend to it
@@ -153,8 +203,14 @@ namespace Server {
             }
         }
 
-        // sends the xyz to all players
+
         public static void SendMovement(int socketId, NetworkVector3 vector3, float yRotation, float forward, float turn, bool crouch, bool onGround, float jump, float jumpLeg) {
+            if (instance != null)
+                instance.Internal_SendMovement(socketId, vector3, yRotation, forward, turn, crouch, onGround, jump, jumpLeg);
+        }
+
+        // sends the xyz to all players
+        private void Internal_SendMovement(int socketId, NetworkVector3 vector3, float yRotation, float forward, float turn, bool crouch, bool onGround, float jump, float jumpLeg) {
             try {
                 foreach (var clientSocket in _clientSockets) {
                     if (clientSocket.Key == socketId) {
@@ -176,6 +232,11 @@ namespace Server {
         /// <param name="socketId"></param>
         /// <param name="newAccount"></param>
         public static void UpdateAccountId(int socketId, Account newAccount) {
+            if (instance != null)
+                instance.Internal_UpdateAccountId(socketId, newAccount);
+        }
+
+        private void Internal_UpdateAccountId(int socketId, Account newAccount) {
             _clientSockets[socketId].AccountId = newAccount.AccountId;
             _clientSockets[socketId].Username = newAccount.Username;
             _clientSockets[socketId].Password = newAccount.Password;
@@ -184,6 +245,13 @@ namespace Server {
         }
 
         public static Account GetAccountFromSocketId(int socketId) {
+            if (instance != null)
+                return instance.Internal_GetAccountFromSocketId(socketId);
+
+            return null;
+        }
+
+        private Account Internal_GetAccountFromSocketId(int socketId) {
             if (_clientSockets.ContainsKey(socketId))
                 return _clientSockets[socketId];
             else
@@ -191,6 +259,13 @@ namespace Server {
         }
 
         public static int GetSocketIdFromAccountId(int accountId) {
+            if (instance != null)
+                return instance.Internal_GetSocketIdFromAccountId(accountId);
+
+            return -1;
+        }
+
+        private int Internal_GetSocketIdFromAccountId(int accountId) {
             var account = _clientSockets.First(keyValue => {
                 if (keyValue.Value.AccountId == accountId)
                     return true;
@@ -199,8 +274,14 @@ namespace Server {
 
             return account.Key;
         }
-
         public static List<Account> GetAllAccounts() {
+            if (instance != null)
+                return instance.Internal_GetAllAccounts();
+
+            return null;
+        }
+
+        private List<Account> Internal_GetAllAccounts() {
             List<Account> accounts = new List<Account>();
             foreach (var client in _clientSockets) {
                 accounts.Add(client.Value);
@@ -209,7 +290,7 @@ namespace Server {
             return accounts;
         }
 
-        private static void SendCallbakck(IAsyncResult result) {
+        private void SendCallbakck(IAsyncResult result) {
             var socketId = (int)result.AsyncState;
             _clientSockets[socketId].Socket.EndSend(result);
         }
