@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Shared.Creature {
     public enum CreatureState {
@@ -6,6 +7,8 @@ namespace Shared.Creature {
         WalkingWaypoints,
         FollowingPlayer
     }
+
+    [Serializable]
     public class InstancedCreature {
         public int InstanceId { get; set; }
         public int TemplateId { get; set; }

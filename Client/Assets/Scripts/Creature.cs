@@ -15,7 +15,11 @@ public class Creature : MonoBehaviour {
 
     public Vector3 startPosition;
 
-    public Text NameObj;
+    public GameObject NameObj;
+    public GameObject NameMount;
+    public GameObject CreatureNamePrefab;
+
+    private Canvas _canvas;
 
     public void Start() {
         destination = transform.position;
@@ -23,7 +27,7 @@ public class Creature : MonoBehaviour {
     }
 
     public void MoveTo(float x, float y, float z, float speed) {
-        destination = new Vector3(x, CalculateY(x,z), z);
+        destination = new Vector3(x, CalculateY(x, z), z);
         startTime = Time.time;
         startPosition = transform.position;
         journeyLength = Vector3.Distance(transform.position, destination);
@@ -45,9 +49,28 @@ public class Creature : MonoBehaviour {
 
         // TODO: dont do this.
         transform.position = new Vector3(transform.position.x, CalculateY(transform.position.x, transform.position.z), transform.position.z);
+
+        if (NameObj != null) {
+            var player = FindObjectOfType<NetworkManager>().Character;
+            if (Vector3.Distance(player.transform.position, transform.position) <= 20) {
+                NameObj.SetActive(true);
+                var rectTransform = (RectTransform)NameObj.transform;
+
+                rectTransform.anchoredPosition = _canvas.WorldToCanvas(NameMount.transform.position);
+            } else {
+                NameObj.SetActive(false);
+            }
+        }
     }
 
     public void SetName(string name) {
-        NameObj.text = name;
+        if (NameObj == null) {
+            _canvas = FindObjectOfType<Canvas>();
+
+            NameObj = (GameObject)Instantiate(CreatureNamePrefab);
+            NameObj.transform.SetParent(_canvas.transform, false);
+            NameObj.name = "Creature Name tag " + name;
+        }
+        NameObj.GetComponent<Text>().text = name;
     }
 }
