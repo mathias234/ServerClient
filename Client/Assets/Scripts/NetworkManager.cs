@@ -255,7 +255,7 @@ public class NetworkManager : MonoBehaviour {
                                 Debug.Log("name: " + character.Name + " level: " + character.Level + " newMap: " + character.MapId);
 
                                 var proxy = Instantiate(ProxyCharacter);
-                                proxy.transform.position = new Vector3(character.X, character.Y, character.Z);
+                                proxy.transform.position = new Vector3(character.Position.X, character.Position.Y, character.Position.Z);
                                 proxy.GetComponent<NetworkCharacter>().socketId = character.SocketId;
                             }
                         }
@@ -286,7 +286,7 @@ public class NetworkManager : MonoBehaviour {
                         if (notifyOtherPlayerMapChange.Character.MapId == CurrentMapId) {
                             if (notifyOtherPlayerMapChange.Character.SocketId != SocketId) {
                                 var proxy = Instantiate(ProxyCharacter);
-                                proxy.transform.position = new Vector3(notifyOtherPlayerMapChange.Character.X, notifyOtherPlayerMapChange.Character.Y, notifyOtherPlayerMapChange.Character.Z);
+                                proxy.transform.position = new Vector3(notifyOtherPlayerMapChange.Character.Position.X, notifyOtherPlayerMapChange.Character.Position.Y, notifyOtherPlayerMapChange.Character.Position.Z);
                                 proxy.GetComponent<NetworkCharacter>().socketId = notifyOtherPlayerMapChange.Character.SocketId;
                             }
                         }
@@ -340,7 +340,7 @@ public class NetworkManager : MonoBehaviour {
             Character.GetComponent<NetworkCharacter>().isLocal = true;
         }
 
-        Character.transform.position = new Vector3(fcu.NewCharacter.X, fcu.NewCharacter.Y, fcu.NewCharacter.Z);
+        Character.transform.position = new Vector3(fcu.NewCharacter.Position.X, fcu.NewCharacter.Position.Y, fcu.NewCharacter.Position.Z);
 
         Debug.Log(fcu.NewCharacter.MapId);
 

@@ -31,7 +31,7 @@ namespace Server.Packet {
                             var y = (float)reader["y"];
                             var z = (float)reader["z"];
 
-                            characters.Add(new Character(socketId, id, name, level, (CharacterClasses)charClass, mapId, x, y, z));
+                            characters.Add(new Character(socketId, id, name, level, (CharacterClasses)charClass, mapId, new NetworkVector3(x, y, z)));
                         }
                         reader.Close();
                     }
@@ -58,7 +58,7 @@ namespace Server.Packet {
                             var y = (float)reader["y"];
                             var z = (float)reader["z"];
 
-                            characters.Add(new Character(-1, id, name, level, (CharacterClasses)charClass, mapId, x, y, z));
+                            characters.Add(new Character(-1, id, name, level, (CharacterClasses)charClass, mapId, new NetworkVector3(x, y, z)));
                         }
                         reader.Close();
                     }

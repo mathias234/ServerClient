@@ -9,12 +9,9 @@ namespace Shared.Creature {
     }
 
     [Serializable]
-    public class InstancedCreature {
+    public class InstancedCreature : Entity {
         public int InstanceId { get; set; }
         public int TemplateId { get; set; }
-        public float X { get; set; }
-        public float Y { get; set; }
-        public float Z { get; set; }
         public int MapId { get; set; }
 
         public List<Waypoint> Waypoints { get; set; }
@@ -22,18 +19,22 @@ namespace Shared.Creature {
 
         public CreatureState state;
 
+        public int TargetEntityId; // the entity id of the target
+
         public InstancedCreature() {
-            state = CreatureState.FollowingPlayer;
+            Init(false);
+
+            state = CreatureState.Idle;
         }
 
-        public InstancedCreature(int instanceId, int templateId, float x, float y, float z, int mapId) {
+        public InstancedCreature(int instanceId, int templateId, NetworkVector3 position, int mapId) {
+            Init(false);
+
             InstanceId = instanceId;
             TemplateId = templateId;
-            X = x;
-            Y = y;
-            Z = z;
+            Position = position;
             MapId = mapId;
-            state = CreatureState.FollowingPlayer;
+            state = CreatureState.Idle;
         }
     }
 }

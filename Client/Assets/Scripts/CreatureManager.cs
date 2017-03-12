@@ -20,7 +20,7 @@ public class CreatureManager : MonoBehaviour {
         var creatureTemplate = Templates.First(t => t.TemplateId == instancedCreature.TemplateId);
 
 
-        creatureObj.transform.position = new Vector3(instancedCreature.X, instancedCreature.Y, instancedCreature.Z);
+        creatureObj.transform.position = new Vector3(instancedCreature.Position.X, instancedCreature.Position.Y, instancedCreature.Position.Z);
         creatureObj.GetComponent<Creature>().instanceId = instancedCreature.InstanceId;
         creatureObj.GetComponent<Creature>().SetName(creatureTemplate.Name);
     }

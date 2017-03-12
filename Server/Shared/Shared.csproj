@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Shared</RootNamespace>
     <AssemblyName>Shared</AssemblyName>
-    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -40,6 +40,7 @@
     <Compile Include="Character.cs" />
     <Compile Include="CharacterClasses.cs" />
     <Compile Include="Creature\CreatureTemplate.cs" />
+    <Compile Include="Creature\Entity.cs" />
     <Compile Include="Creature\InstancedCreature.cs" />
     <Compile Include="Creature\Waypoint.cs" />
     <Compile Include="NetworkVector3.cs" />

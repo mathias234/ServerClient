@@ -21,7 +21,7 @@ namespace Shared.Packets {
 
         public FullCharacterUpdate(int socketId, int characterId) {
             SocketId = socketId;
-            NewCharacter = new Character(-1, characterId, "", 0, CharacterClasses.Agent, 0, 0, 0, 0);
+            NewCharacter = new Character(-1, characterId, "", 0, CharacterClasses.Agent, 0, new NetworkVector3());
         }
 
         public override BaseNetworkPacket FromByteArray(byte[] byteArray) {

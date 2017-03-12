@@ -17,9 +17,9 @@ namespace Server.Packet {
 
                     var tempCharacter = MainServer.GetAccountFromSocketId(movement.SocketId).CharacterOnline;
 
-                    tempCharacter.X = movement.NewPosition.X;
-                    tempCharacter.Y = movement.NewPosition.Y;
-                    tempCharacter.Z = movement.NewPosition.Z;
+                    tempCharacter.Position.X = movement.NewPosition.X;
+                    tempCharacter.Position.Y = movement.NewPosition.Y;
+                    tempCharacter.Position.Z = movement.NewPosition.Z;
 
                     MainServer.GetAccountFromSocketId(movement.SocketId).CharacterOnline = tempCharacter;
 
@@ -75,9 +75,7 @@ namespace Server.Packet {
                     var changeMap = (ChangeMap)packet;
 
                     MainServer.GetAccountFromSocketId(socketId).CharacterOnline.MapId = changeMap.NewMapId;
-                    MainServer.GetAccountFromSocketId(socketId).CharacterOnline.X = changeMap.NewX;
-                    MainServer.GetAccountFromSocketId(socketId).CharacterOnline.Y = changeMap.NewY;
-                    MainServer.GetAccountFromSocketId(socketId).CharacterOnline.Z = changeMap.NewZ;
+                    MainServer.GetAccountFromSocketId(socketId).CharacterOnline.Position = new NetworkVector3(changeMap.NewX, changeMap.NewY, changeMap.NewZ);
 
                     DbCharacter dbChar = new DbCharacter(MainServer.GetAccountFromSocketId(socketId).CharacterOnline);
                     dbChar.SaveToDb();

@@ -31,9 +31,7 @@ namespace Shared.Packets {
                 var creature = new InstancedCreature(
                     br.ReadInt32(),
                     br.ReadInt32(),
-                    br.ReadSingle(),
-                    br.ReadSingle(),
-                    br.ReadSingle(),
+                    new NetworkVector3(br.ReadSingle(),br.ReadSingle(),br.ReadSingle()),
                     br.ReadInt32());
 
                 Creatures.Add(creature);
@@ -52,9 +50,9 @@ namespace Shared.Packets {
             foreach (var creature in Creatures) {
                 bw.Write(creature.InstanceId);
                 bw.Write(creature.TemplateId);
-                bw.Write(creature.X);
-                bw.Write(creature.Y);
-                bw.Write(creature.Z);
+                bw.Write(creature.Position.X);
+                bw.Write(creature.Position.Y);
+                bw.Write(creature.Position.Z);
                 bw.Write(creature.MapId);
             }
 

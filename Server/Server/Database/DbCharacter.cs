@@ -23,9 +23,9 @@ namespace Server {
                 Character.Level,
                 (int)Character.Class,
                 Character.MapId,
-                Character.X,
-                Character.Y,
-                Character.Z);
+                Character.Position.X,
+                Character.Position.Y,
+                Character.Position.Z);
 
             MainServer.MainDb.Run(query);
         }
@@ -46,7 +46,7 @@ namespace Server {
 
                     reader.Close();
 
-                    return new Character(-1, id, name, level, (CharacterClasses)charClass, mapId, x, y, z);
+                    return new Character(-1, id, name, level, (CharacterClasses)charClass, mapId, new NetworkVector3(x, y, z));
                 }
             }
 

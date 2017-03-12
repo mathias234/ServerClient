@@ -1,4 +1,5 @@
-﻿using Shared.Creature;
+﻿using Shared;
+using Shared.Creature;
 using Shared.Packets;
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,7 @@ namespace Server.WorldHandlers {
 
                 switch (creature.state) {
                     case CreatureState.Idle:
-                        Thread.Sleep(5000);
+                        CheckInRange(creature);
                         break;
                     case CreatureState.WalkingWaypoints:
                         WalkWaypoint(creature);
@@ -55,6 +56,25 @@ namespace Server.WorldHandlers {
             }
         }
 
+        /// <summary>
+        /// Check if any of the players in this map is within attack range.
+        /// </summary>
+        /// <param name="creature"></param>
+        private void CheckInRange(InstancedCreature creature) {
+            var players = Entity.GetPlayerEntities();
+            foreach (var player in players) {
+                if (player.Position == null)
+                    continue;
+
+                var distance = NetworkVector3.Distance(player.Position, creature.Position);
+
+                if (distance <= 5) {
+                    creature.state = CreatureState.FollowingPlayer;
+                    return;
+                }
+            }
+        }
+
         public void FollowPlayer(int playerId, InstancedCreature creature) {
             Account player = MainServer.GetAccountFromSocketId(playerId);
 
@@ -63,7 +83,11 @@ namespace Server.WorldHandlers {
                 return;
             }
 
-            MoveCreature(creature.InstanceId, player.CharacterOnline.X, player.CharacterOnline.Y, player.CharacterOnline.Z, 2);
+            MoveCreature(creature.InstanceId, new NetworkVector3(
+                player.CharacterOnline.Position.X, 
+                player.CharacterOnline.Position.Y, 
+                player.CharacterOnline.Position.Z),
+                2);
             Thread.Sleep(500);
         }
 
@@ -82,13 +106,13 @@ namespace Server.WorldHandlers {
                 var newX = currentWaypoint.X;
                 var newZ = currentWaypoint.Z;
 
-                MoveCreature(creature.InstanceId, newX, creature.Y, newZ, 2);
+                MoveCreature(creature.InstanceId, new NetworkVector3(newX, creature.Position.Y, newZ), 2);
 
                 Thread.Sleep(currentWaypoint.StayTime);
             }
         }
 
-        public void MoveCreature(int InstanceId, float x, float y, float z, float speed) {
+        public void MoveCreature(int InstanceId, NetworkVector3 position, float speed) {
             var creature = _spawnedCreatures[InstanceId];
 
             foreach (var players in MainServer.GetAllAccounts()) {
@@ -96,12 +120,12 @@ namespace Server.WorldHandlers {
 
                 MainServer.SendData(
                     socketId,
-                    new MoveCreature(socketId, creature.InstanceId, x, y, z, speed).ToByteArray());
+                    new MoveCreature(socketId, creature.InstanceId, position.X, position.Y, position.Z, speed).ToByteArray());
             }
 
-            creature.X = x;
-            creature.Y = y;
-            creature.Z = z;
+            creature.Position.X = position.X;
+            creature.Position.Y = position.Y;
+            creature.Position.Z = position.Z;
         }
 
         private void Callback_PlayerEnteredMap(int socketId, int MapId) {
@@ -139,9 +163,10 @@ namespace Server.WorldHandlers {
                     var creature = new InstancedCreature(
                         (int)reader["instanceId"],
                         (int)reader["templateId"],
-                        (float)reader["x"],
-                        (float)reader["y"],
-                        (float)reader["z"],
+                        new NetworkVector3(
+                            (float)reader["x"],
+                            (float)reader["y"],
+                            (float)reader["z"]),
                         (int)reader["mapId"]);
 
 

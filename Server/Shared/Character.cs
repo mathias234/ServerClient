@@ -1,42 +1,45 @@
-﻿using System;
+﻿using Shared.Creature;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
 namespace Shared {
-    public class Character {
+    public class Character : Entity {
         public int SocketId { get; set; }
         public int CharacterId { get; set; }
         public string Name { get; set; }
         public int Level { get; set; }
         public CharacterClasses Class { get; set; }
         public int MapId;
-        public float X;
-        public float Y;
-        public float Z;
 
-        public Character(int socketId, int characterId, string name, int level, CharacterClasses charClass, int mapId, float x, float y, float z) {
+        public Character(int socketId, int characterId, string name, int level, CharacterClasses charClass, int mapId, NetworkVector3 position) {
+            Init(true);
+
             SocketId = socketId;
             CharacterId = characterId;
             Name = name;
             Level = level;
             Class = charClass;
             MapId = mapId;
-            X = x;
-            Y = y;
-            Z = z;
+            Position = position;
         }
 
         public Character(BinaryReader br) {
+            Init(true);
+
             SocketId = br.ReadInt32();
             CharacterId = br.ReadInt32();
             Name = br.ReadString();
             Level = br.ReadInt32();
             Class = (CharacterClasses)br.ReadByte();
             MapId = br.ReadInt32();
-            X = br.ReadSingle();
-            Y = br.ReadSingle();
-            Z = br.ReadSingle();
+
+            Position = new NetworkVector3();
+
+            Position.X = br.ReadSingle();
+            Position.Y = br.ReadSingle();
+            Position.Z = br.ReadSingle();
         }
 
         public byte[] ToByteArray() {
@@ -48,9 +51,9 @@ namespace Shared {
             bw.Write(Level);
             bw.Write((byte)Class);
             bw.Write(MapId);
-            bw.Write(X);
-            bw.Write(Y);
-            bw.Write(Z);
+            bw.Write(Position.X);
+            bw.Write(Position.Y);
+            bw.Write(Position.Z);
 
             var data = ((MemoryStream)bw.BaseStream).ToArray();
 
